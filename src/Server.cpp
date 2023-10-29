@@ -20,6 +20,7 @@ IrcServ::IrcServ() {}
 // 	return (false);
 // }
 
+
 IrcServ::IrcServ(int portNumber, std::string password)
 {
     this->portNumber = portNumber;
