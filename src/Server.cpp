@@ -1,43 +1,38 @@
 #include "../inc/Server.hpp"
 
-IrcServ::IrcServ() {}
+Server::Server() {}
 
-// static bool password_checker(const std::string &str)
-// {
-// 	/* password가 비어있거나 16이하인지 체크*/
-// 	if (str.empty() || str.length() > 16)
-// 	{
-// 		return (true);
-// 	}
-// 	/* 공백 문자 또는 출력 가능하지 않은 문자 포함하는지 확인.*/
-// 	for (std::size_t i = 0; i < str.length(); ++i)
-// 	{
-// 		if (std::isspace(str.at(i)) || !std::isprint(str.at(i)))
-// 		{
-// 			return (true);
-// 		}
-// 	}
-// 	return (false);
-// }
+bool Server::password_checker(const std::string &str)
+{
+    if (str.empty())
+    {
+        return (true);
+    }
+    /* 공백 문자 또는 출력 가능하지 않은 문자 포함하는지 확인.*/
+    for (int i = 0; i < str.length(); i++)
+    {
+        if ((std::isspace(str[i])) || !std::isprint(str[i]))
+            return (true);
+    }
+    return (false);
+}
 
-
-IrcServ::IrcServ(int portNumber, std::string password)
+Server::Server(int portNumber, std::string password)
 {
     this->portNumber = portNumber;
     this->password = password;
 
-    // if (password_checker(this->password))
-    // {
-    // 	std::cerr << "input port invaild" << std::endl;
-    // 	std::exit(1);
-    // }
-
+    if (password_checker(this->password))
+    {
+        std::cerr << "input port invaild" << std::endl;
+        std::exit(1);
+    }
     this->kque = kqueue(); // kque 생성
     if (this->kque == -1)
         throw std::runtime_error("kqueue error");
 }
 
-void IrcServ::openSocket()
+void Server::openSocket()
 {
     sockaddr_in serverAddr;
 
@@ -65,7 +60,7 @@ void IrcServ::openSocket()
                                                     // tcp 연결 완료.
 }
 
-void IrcServ::init()
+void Server::init()
 {
     struct kevent event;
 
@@ -74,13 +69,13 @@ void IrcServ::init()
         throw std::runtime_error("kevent attach error");
 }
 
-IrcServ::~IrcServ()
+Server::~Server()
 {
     close(serverSocket);
     close(kque);
 }
 
-void IrcServ::run()
+void Server::run()
 {
     while (true)
     {
@@ -100,13 +95,13 @@ void IrcServ::run()
             else
             { // 기존 접속
                 std::cout << "기존 접속!" << std::endl;
-                handleExistingConnection(events[i].ident);
+                handleExistingConnection(events[i].ident, events[i]);
             }
         }
     }
 }
 
-void IrcServ::handleNewConnection(int sockFd)
+void Server::handleNewConnection(int sockFd)
 {
     struct sockaddr client_addr;
     struct kevent event;
@@ -118,13 +113,99 @@ void IrcServ::handleNewConnection(int sockFd)
         throw std::runtime_error("accept error");
     EV_SET(&event, newFd, EVFILT_READ, EV_ADD, NULL, 0, NULL);
     kevent(this->kque, &event, 1, NULL, 0, NULL);
+
+    Client client(newFd);
+    socketFdToClient.insert(std::make_pair(newFd, client));
 }
 
-void IrcServ::handleExistingConnection(int fd)
+void Server::handleExistingConnection(int fd, struct kevent event)
 {
-    char data[1024];
-    if (read(fd, data, 1024) == -1)
-        throw std::runtime_error("read error");
-	
-    std::cout << data << std::endl;
+    if (isConnected(fd, event) == false)
+    {
+        this->terminateConnection(fd, event);
+        return;
+    }
+
+    char buffer[1024];
+
+    memset(buffer, 0, sizeof(buffer));
+
+    int received = recv(fd, buffer, sizeof(buffer), 0);
+    // 만약 데이터 수신이 실패한 경우 오류 메세지
+    if (received < 0)
+    {
+        std::cout << "Error: Receving data failed" << std::endl;
+        return;
+    }
+
+    execCommand(Message(fd, buffer));
+
+    // std::cout << buffer << std::endl;
 }
+
+bool Server::isConnected(int fd, struct kevent event)
+{
+    if (event.flags & EV_EOF)
+    {
+        return false;
+    }
+    return true;
+}
+
+void Server::terminateConnection(int fd, struct kevent event)
+{
+    struct kevent temp_event;
+    EV_SET(&temp_event, fd, EVFILT_READ, EV_DELETE, 0, 0, NULL);
+    kevent(kque, &temp_event, 1, NULL, 0, NULL);
+    close(fd);
+    std::cout << fd << " : close!" << std::endl;
+}
+
+void Server::execCommand(Message message)
+{
+    if (message.getCommand() == "PASS")
+    {
+        pass(message);
+    }
+    else if (message.getCommand() == "NICK")
+    {
+        nick(message);
+    }
+    else if (message.getCommand() == "USER")
+    {
+        user(message);
+    }
+    else if (message.getCommand() == "PRIVMSG")
+    {
+        privmsg(message);
+    }
+    // 등등...
+}
+
+void Server::pass(Message &message)
+{
+    if (this->password != message.getArg()[0])
+    {
+        //std::cout << message.getArg()[0] << "password error" << std::endl;
+        // TODO : 비밀번호 에러 전송 후 종료
+    }
+}
+
+void Server::nick(Message &message)
+{
+    this->socketFdToClient[message.getSocket()]
+        .setNickname(message.getArg()[0]);
+}
+
+void Server::user(Message &message)
+{
+    this->socketFdToClient[message.getSocket()]
+        .setUsername(message.getArg()[0]);
+}
+
+void Server::privmsg(Message &message)
+{
+    write(message.getSocket(), message.getArg()[0].c_str(), message.getArg()[0].size());
+    // TODO : 닉네임 받고 그 닉네임에 맞는 fd 찾고 그거에 다가 메시지 전송
+}
+
