@@ -7,9 +7,13 @@ SRCDIR		:=	src
 INCDIR		:=	inc
 
 SRCS		:=	$(SRCDIR)/main.cpp\
-				$(SRCDIR)/Server.cpp\
+				$(SRCDIR)/Server.cpp \
+				$(SRCDIR)/Message.cpp \
+				$(SRCDIR)/Client.cpp\
 
-INCS		:=	$(INCDIR)/Server.cpp\
+INCS		:=	$(INCDIR)/Server.hpp\
+				$(INCDIR)/Message.hpp\
+				$(INCDIR)/Client.hpp\
 
 OBJS		:=	$(SRCS:.cpp=.o)
 
