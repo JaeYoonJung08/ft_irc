@@ -212,7 +212,36 @@ void Server::execCommand(Message message)
     {
         privmsg(message);
     }
+    else if (message.getCommand() == "PING")
+    {
+        ping(message);
+    }
     // 등등...
+}
+
+void Server::ping(Message &message)
+{
+        // this->socketFdToClient[message.getSocket()]
+        // .setNickname(message.getArg()[0]);
+    if (message.getArg()[0].empty())
+	{
+        const std::string& error_message = ":irc.local  461 * " \
+        + message.getCommand() + " :Not enough parameters";
+		return ;
+	}
+    //[MSG]  :        :irc.local PONG  :ircserv
+    std::cout << ":irc.local PONG " + message.getArg()[0] << std::endl;
+    //pong 메세지 넣어주어야함.
+    pong(message);
+
+}
+
+void Server::pong(Message &message)
+{
+    // if (message.find("PONG :1234567890") != std::string::npos) {
+    //     // 서버로부터 PONG 메시지를 받았을 때 처리할 내용
+    //     // PONG 메시지의 맨 뒤에 있는 임의의 숫자는 PING 메시지와 일치해야 합니다.
+    // }
 }
 
 void Server::pass(Message &message)

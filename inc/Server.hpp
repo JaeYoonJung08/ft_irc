@@ -70,6 +70,8 @@ class Server
     void nick(Message &message);
     void user(Message &message);
     void privmsg(Message &message);
+    void ping(Message &message);
+    void pong(Message &message);
     void join(std::string channel);
     void part(std::string channel, std::string reason); // 채널 퇴장
     void quit(std::string reason);                      // 서버 접속 끊기
