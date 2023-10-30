@@ -7,6 +7,9 @@
 #include <iterator>
 #include <sstream>
 #include <vector>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/socket.h>
 
 class Message
 {
@@ -18,6 +21,10 @@ class Message
 
   public:
     Message(int socket, std::string msg);
+    Message(int socket,
+            const std::string &prefix,
+            const std::string &command,
+            const std::vector<std::string> &argument);
     ~Message();
 
     std::string getPrefix();
@@ -26,6 +33,10 @@ class Message
     int getSocket();
 
     void parse(std::string msg);
+    void sendToClient();
+    void sendToPong();
 };
+
+std::vector<std::string> split(std::string input, char delimiter);
 
 #endif

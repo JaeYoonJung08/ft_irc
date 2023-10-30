@@ -19,6 +19,7 @@ class Client
     // Client(int socket, const std::string &nickname, const std::string &username);
     void setUsername(std::string username);
     void setNickname(std::string nickname);
+    const std::string &getNickname() const;
 };
 
 #endif

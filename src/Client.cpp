@@ -5,6 +5,8 @@ Client::Client(){}
 Client::Client(int socket)
 {
     this->socket = socket;
+    nickname = "";
+    username = "";
 }
 
 // Client::Client(int socket, const std::string &nickname,
@@ -27,3 +29,7 @@ void Client::setNickname(std::string nickname)
 // Client::
 
 Client::~Client() {}
+const std::string &Client::getNickname() const
+{
+    return nickname;
+}
