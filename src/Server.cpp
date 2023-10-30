@@ -95,7 +95,25 @@ void Server::run()
             else
             { // 기존 접속
                 std::cout << "기존 접속!" << std::endl;
-                handleExistingConnection(events[i].ident, events[i]);
+                //naki님이 말씀하신 서버에서 클라이언트로 우째 보내노 라는 질문을
+                //여기서 해결할 것임
+                //kevent 구조체 안에는 filter라는 게 있음 이 친구들을 통해 
+                //서버에서 소켓을 받는지, 클라이언트한테 보내줄 것인지를 결정
+                if (events[i].filter == EVFILT_READ)
+                {
+                    //기존 handleExistingConnection
+                    //여기 이 부분이 클라이언트가 서버로 패킷을 보낼 경우
+
+                    //여기서 이제해야할 거 개행을 찾지 못한 경우와 개행을 찾은 경우을 나누어야함.
+                    //함수 수정해주자
+                    handleExistingConnection(events[i].ident, events[i]);
+                }
+                // else if (events[i].filter == EVFILT_WRITE)
+                // {
+                //     //새롭게 추가 된 거
+                //     //서버가 클라리언트로 패킷을 보낼 경우
+                //     handleExistingConnection_send_client(events[i].ident, events[i]);
+                // }
             }
         }
     }
@@ -117,6 +135,22 @@ void Server::handleNewConnection(int sockFd)
 
     Client client(newFd);
     socketFdToClient.insert(std::make_pair(newFd, client));
+}
+
+
+/* 서버가 클라이언트한테 소켓을 보낼 때*/
+void Server::handleExistingConnection_send_client(int fd, struct kevent event)
+{
+    //서버가 클라이언트한테 소캣을 보내는 경우,,?
+    int send_data = send(fd, "awd", 3,0);
+
+
+    std::cout << "HERE!!\n";
+    if (send_data < 0)
+    {
+        std::cout << "Error: Sending data failed" << std::endl;
+        return ;
+    }
 }
 
 #define RED "\e[0;31m"
@@ -150,7 +184,6 @@ void Server::handleExistingConnection(int fd, struct kevent event)
         execCommand(Message(fd, messages[i]));
     }
 
-    // std::cout << buffer << std::endl;
 }
 
 bool Server::isConnected(int fd, struct kevent event)
@@ -189,7 +222,38 @@ void Server::execCommand(Message message)
     {
         privmsg(message);
     }
+    else if (message.getCommand() == "PING")
+    {
+        ping(message);
+    }
     // 등등...
+}
+
+void Server::ping(Message &message)
+{
+
+    if (message.getArg()[0].empty())
+	{
+        const std::string& error_message = ":irc.local  461 * " \
+        + message.getCommand() + " :Not enough parameters";
+		return ;
+	}
+    std::cout << ":irc.local PONG " + message.getArg()[0] << std::endl;
+    //pong 메세지 넣어주어야함.
+    pong(message);
+
+}
+
+void Server::pong(Message &message)
+{
+    
+    std::vector<std::string> textToBeSent;
+    for (int i = 0; i < message.getArg().size(); i++)
+        textToBeSent.push_back(message.getArg()[i]);
+    std::string prefix = ":" + socketFdToClient[message.getSocket()].getNickname();
+
+    Message toSendMessage(message.getSocket(), prefix, "PONG", textToBeSent);
+    toSendMessage.sendToPong();
 }
 
 void Server::pass(Message &message)

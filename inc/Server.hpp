@@ -35,6 +35,7 @@ enum Cmd
 	TOPIC
 };
 
+
 class Server
 {
   private:
@@ -58,6 +59,7 @@ class Server
     void run();
     void handleNewConnection(int sockFd);
     void handleExistingConnection(int fd, struct kevent event);
+    void handleExistingConnection_send_client(int fd, struct kevent event);
     bool isConnected(int fd, struct kevent event);
     void terminateConnection(int fd, struct kevent event);
     void execCommand(Message message);
@@ -68,6 +70,8 @@ class Server
     void nick(Message &message);
     void user(Message &message);
     void privmsg(Message &message);
+    void ping(Message &message);
+    void pong(Message &message);
     void join(std::string channel);
     void part(std::string channel, std::string reason); // 채널 퇴장
     void quit(std::string reason);                      // 서버 접속 끊기
