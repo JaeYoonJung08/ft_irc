@@ -143,7 +143,12 @@ void Server::handleExistingConnection(int fd, struct kevent event)
     }
     std::cout << RED << buffer << NC << std::endl;
 
-    execCommand(Message(fd, buffer));
+    std::vector<std::string> messages = split(buffer, '\n');
+
+    for (int i = 0; i < messages.size(); i++)
+    {
+        execCommand(Message(fd, messages[i]));
+    }
 
     // std::cout << buffer << std::endl;
 }
