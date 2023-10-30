@@ -10,10 +10,13 @@ SRCS		:=	$(SRCDIR)/main.cpp\
 				$(SRCDIR)/Server.cpp \
 				$(SRCDIR)/Message.cpp \
 				$(SRCDIR)/Client.cpp\
+				$(SRCDIR)/Channel.cpp\
+
 
 INCS		:=	$(INCDIR)/Server.hpp\
 				$(INCDIR)/Message.hpp\
 				$(INCDIR)/Client.hpp\
+				$(INCDIR)/Channel.hpp\
 
 OBJS		:=	$(SRCS:.cpp=.o)
 
