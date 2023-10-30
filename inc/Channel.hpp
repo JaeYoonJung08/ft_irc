@@ -2,16 +2,16 @@
 #define CHANNEL_HPP
 
 #include <iostream>
-#include <list>
+#include <map>
 #include <string>
+#include <iterator>
 
 
 class Channel {
 private:
     std::string name;
     std::string topicTitle;
-    std::list<std::string> members;
-    std::list<std::string> operators;
+    std::map<std::string, int> members; // 0 : member, 1 : operator
 
 
 public:
@@ -23,13 +23,12 @@ public:
 
     const std::string &getName() const;
     const std::string &getTopicTitle() const;
-    const std::list<std::string> &getMembers() const;
-    const std::list<std::string> &getOperators() const;
+    const std::map<std::string, int> &getMembers() const;
 
-    void topic();
+    void topic(const std::string &newtopicTitle);
     void mode();
-    void kick();
-    void invite();
+    int kick(const std::string &nickname);
+    void invite(const std::string &nickname);
 };
 
 
