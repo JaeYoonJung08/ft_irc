@@ -193,8 +193,26 @@ void Server::pass(Message &message)
 
 void Server::nick(Message &message)
 {
-    this->socketFdToClient[message.getSocket()]
-        .setNickname(message.getArg()[0]);
+    int socket = message.getSocket();
+    std::string newNickname = message.getArg()[0];
+
+    std::map<int, Client>::iterator iter = socketFdToClient.find(socket);
+    std::map<std::string , int>::iterator iterNicknameToSocket = nicknameToSocketFd.find(newNickname);
+
+
+    if (iterNicknameToSocket == nicknameToSocketFd.end()) // nickname 중복 아님
+    {
+        if (iter->second.getNickname() != "") // 이미 닉네임이 설정된 유저의 경우 - 변경
+        {
+            nicknameToSocketFd.erase(iter->second.getNickname());
+        }
+        iter->second.setNickname(newNickname);
+        nicknameToSocketFd[newNickname] = message.getSocket();
+    }
+    else
+    {
+        // TODO : Nickname 중복 에러 전송
+    }
 }
 
 void Server::user(Message &message)
