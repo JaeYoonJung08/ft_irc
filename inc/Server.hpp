@@ -12,31 +12,30 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include <map>
 #include <list>
+#include <map>
 
+#include "../inc/Channel.hpp"
 #include "../inc/Client.hpp"
 #include "../inc/Message.hpp"
-#include "../inc/Channel.hpp"
 
 #define LISTEN_BACKLOG_NUM 5 // listen 에서 대기 큐 갯수.
 
 enum Cmd
 {
-	PASS,
-	NICK,
-	USER,
-	PRIVMSG,
-	JOIN,
-	PART,
-	QUIT,
-	EXIT,
-	KICK,
-	INVITE,
-	MODE,
-	TOPIC
+    PASS,
+    NICK,
+    USER,
+    PRIVMSG,
+    JOIN,
+    PART,
+    QUIT,
+    EXIT,
+    KICK,
+    INVITE,
+    MODE,
+    TOPIC
 };
-
 
 class Server
 {
@@ -49,7 +48,7 @@ class Server
     std::map<std::string, int> nicknameToSocketFd;
     std::map<int, Client> socketFdToClient;
     // TODO: 채널 이름 to Channel map
-    //std::list<Channel> channel;
+    // std::list<Channel> channel;
     std::map<std::string, Channel> channel;
 
     Server();
@@ -77,11 +76,12 @@ class Server
     void ping(Message &message);
     void pong(Message &message);
     void join(Message &message);
-    void part(std::string channel, std::string reason); // 채널 퇴장
-    void quit(std::string reason);                      // 서버 접속 끊기
-    void exit(void); // 서버 접속 끊고 프로그램 종료
+    void part(Message &message);   // 채널 퇴장
+    void quit(std::string reason); // 서버 접속 끊기
+    void exit(void);               // 서버 접속 끊고 프로그램 종료
 
     /* operators */
+    void kick(Message &message);
     void kick(std::string channel, std::string nickname,
               std::string reason); // reason 없어도됨
     void invite(std::string nickname, std::string channel);

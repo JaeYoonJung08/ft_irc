@@ -216,10 +216,12 @@ void Server::execCommand(Message message)
         ping(message);
     else if (message.getCommand() == "JOIN")
         join(message);
-    // else if (message.getCommand() == "PART")
-    //     part(message);
-    // TODO : KICK, INVITE, MODE, TOPIC - operators only
-    // TODO : PART, QUIT, EXIT
+    else if (message.getCommand() == "PART")
+        part(message);
+    else if (message.getCommand() == "KICK")
+        kick(message);
+    // TODO : INVITE, MODE, TOPIC - operators only
+    // TODO : QUIT, EXIT
 }
 
 void Server::join(Message &message)
@@ -231,9 +233,10 @@ void Server::join(Message &message)
         return;
     }
     std::cout << "Here\n";
-    
+
     std::string channel_name = message.getArg()[0];
-    std::map<std::string, Channel>::iterator iter = this->channel.find(channel_name);
+    std::map<std::string, Channel>::iterator iter =
+        this->channel.find(channel_name);
 
     // 채널이 없을 경우 생성
     if (iter == this->channel.end())
@@ -241,60 +244,63 @@ void Server::join(Message &message)
         Channel newChannel(channel_name);
         newChannel.setMembers(
             socketFdToClient[message.getSocket()].getNickname(), 1);
-        //this->channel[channel_name] = newChannel;
+        // this->channel[channel_name] = newChannel;
         channel.insert(make_pair(channel_name, newChannel));
 
-        //출력해보기
-        // iter = channel.begin();
-        // for ( ; iter != channel.end(); iter++)
-        // {
-        //     std::cout << "channel -> channel_name : " << iter->first<<std::endl;
-        //     iter->second.printMember();
-        // }
-        
+        // 출력해보기
+        //  iter = channel.begin();
+        //  for ( ; iter != channel.end(); iter++)
+        //  {
+        //      std::cout << "channel -> channel_name : " <<
+        //      iter->first<<std::endl; iter->second.printMember();
+        //  }
     }
     // 채널이 있을 경우 그냥 들어가기
     else
     {
         std::cout << "원래 있다 쉐캬\n";
-        iter->second.setMembers(socketFdToClient[message.getSocket()].getNickname(),
-                         0);
+        iter->second.setMembers(
+            socketFdToClient[message.getSocket()].getNickname(), 0);
     }
 }
 
-void Server::part(Message &message)
+void Server::part(Message &message) // cout 한 것 전부 send(error)로 바꿔야 !
 {
     if (message.getArg()[0].empty())
     {
-        std::cout << "no arg error\n";
+        // error 461 "<client> <command> :Not enough parameters"
         return;
     }
 
     std::string channelName = message.getArg()[0];
-    std::map<std::string, Channel>::iterator iterCh = this->channel.find(channelName);
-    if (iterCh == this->channel.end())    // 나갈 채널이 없을 경우
+    std::map<std::string, Channel>::iterator iterCh =
+        this->channel.find(channelName);
+    if (iterCh == this->channel.end()) // 나갈 채널이 없을 경우
     {
-        std::cout << channelName << ":No such channel\n";
-        return ;
+        // error 403 "<client> <channel> :No such channel"
+        return;
     }
 
     std::string nickname = socketFdToClient[message.getSocket()].getNickname();
     std::map<std::string, int> members = iterCh->second.getMembers();
     std::map<std::string, int>::iterator iterNick = members.find(nickname);
-    if (iterNick == members.end())     // 채널은 있는데 그 채널 속 유저가 아님
+    if (iterNick == members.end()) // 채널은 있는데 그 채널 속 유저가 아님
     {
-        std::cout << channelName << ":You're not on that channel\n";
-        return ;
+        // error 442 "<client> <channel> :You're not on that channel"
+        return;
     }
-    else    //채널 있고, 그 채널 속 유저임 -> 채널 나갈거임 !
+    else // 채널 있고, 그 채널 속 유저임 -> 채널 나갈거임 ! 만약 방장이라면 ? ..
     {
-
+        if (iterNick->second == 1)
+            ; // 방장이라면 : 다른 사람에게 방장 물려주기 / 다른 방장 x시 방
+              // 폭파
+        members.erase(nickname); // members에서 iterNick 빼기 . .
     }
+    return;
 }
 
 void Server::ping(Message &message)
 {
-
     if (message.getArg()[0].empty())
     {
         const std::string &error_message = ":irc.local  461 * " +
@@ -309,7 +315,6 @@ void Server::ping(Message &message)
 
 void Server::pong(Message &message)
 {
-
     std::vector<std::string> textToBeSent;
     for (int i = 0; i < message.getArg().size(); i++)
         textToBeSent.push_back(message.getArg()[i]);
@@ -378,4 +383,66 @@ void Server::privmsg(Message &message)
                               "PRIVMSG", textToBeSent);
         toSendMessage.sendToClient();
     }
+}
+
+// kick param : <channel> <user>인데 . . 여러명도 가능이라면 ? 자살
+void Server::kick(Message &message)
+{
+    // 인자 있는지 확인
+    if (message.getArg()[0].empty() || message.getArg()[1].empty())
+    {
+        // error 461 "<client> <command> :Not enough parameters"
+        return;
+    }
+
+    // 채널 있는지 확인
+    std::string channelName = message.getArg()[0];
+    std::map<std::string, Channel>::iterator iterCh =
+        this->channel.find(channelName);
+    if (iterCh == this->channel.end())
+    {
+        // error 403 "<client> <channel> :No such channel"
+        return;
+    }
+
+    std::string nickname = socketFdToClient[message.getSocket()].getNickname();
+    std::map<std::string, int> members = iterCh->second.getMembers();
+    std::map<std::string, int>::iterator iterNick = members.find(nickname);
+    if (iterNick == members.end()) // 호출한 사람이 그 채널 속 유저가 아님
+    {
+        // error 442 "<client> <channel> :You're not on that channel"
+        return;
+    }
+    if (iterNick->second != 1) // 호출한 사람이 채널에 있긴 한데 방장이 아님
+    {
+        // error 482 "<client> <channel> :You're not channel operator"
+        return;
+    }
+
+    std::string kickName = message.getArg()[1];
+    std::map<std::string, int>::iterator iterNick = members.find(kickName);
+    if (iterNick == members.end()) // kick할 사람이 그 채널 속 유저가 아님
+    {
+        // error 441 "<client> <nick> <channel> :They aren't on that channel"
+        return;
+    }
+
+    members.erase(kickName);
+    return;
+
+    /*
+        std::map<std::string, int>::iterator iter = members.find(nickname);
+
+        if (iter == members.end()) // 유저 존재 x
+        {
+            std::cout << "no nickname" << std::endl;
+            return;
+        }
+        else
+        {
+            members.erase(nickname);
+            // TODO : kick 되었다고 전송?
+        }
+        return;
+    */
 }

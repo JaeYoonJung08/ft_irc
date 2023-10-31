@@ -12,7 +12,7 @@ Channel::Channel(const std::string &name) : name(name)
 void Channel::setMembers(const std::string &nickname, const int operator_check)
 {
     this->members[nickname] = operator_check;
-    //members.insert(make_pair(nickname, operator_check));
+    // members.insert(make_pair(nickname, operator_check));
 }
 
 const std::string &Channel::getName() const { return name; }
@@ -30,24 +30,6 @@ void Channel::topic(const std::string &newtopicTitle)
 }
 
 void Channel::mode() {}
-
-int Channel::kick(const std::string &nickname)
-{
-    std::map<std::string, int>::iterator iter = members.find(nickname);
-
-    if (iter == members.end()) // 유저 존재 x
-    {
-        std::cout << "no nickname" << std::endl;
-        return 0;
-    }
-    else
-    {
-        members.erase(nickname);
-        // TODO : kick 되었다고 전송?
-    }
-
-    return 0;
-}
 
 void Channel::invite(const std::string &nickname)
 {
