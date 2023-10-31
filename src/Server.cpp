@@ -57,7 +57,7 @@ void Server::openSocket()
              sizeof(serverAddr)) == -1)
         throw std::runtime_error("bind error");
     listen(this->serverSocket, LISTEN_BACKLOG_NUM); // 수신하도록 listen
-                                                    // tcp 연결 완료.
+    // tcp 연결 완료.
 }
 
 void Server::init()
@@ -220,7 +220,11 @@ void Server::execCommand(Message message)
         part(message);
     else if (message.getCommand() == "KICK")
         kick(message);
-    // TODO : INVITE, MODE, TOPIC - operators only
+    else if (message.getCommand() == "TOPIC")
+        topic(message);
+    else if (message.getCommand() == "INVITE")
+        topic(message);
+    // TODO : MODE - operators only
     // TODO : QUIT, EXIT
 }
 
@@ -259,6 +263,26 @@ void Server::join(Message &message)
     else
     {
         std::cout << "원래 있다 쉐캬\n";
+        //invite만 가능한 방
+        if (iter->second.getMODE_I())
+        {
+            //에러 처리 해주기
+            return;
+        }
+        //채널이 비밀번호가 있을 때
+        if (iter->second.getMODE_K())
+        {
+            if (message.getArg()[1] == iter->second.getPassword())
+            {
+                iter->second.setMembers(
+                    socketFdToClient[message.getSocket()].getNickname(), 0);
+            }
+            else // 비밀 번호 틀렷을 때 에러 처리
+            {
+
+                return ;
+            }
+        }
         iter->second.setMembers(
             socketFdToClient[message.getSocket()].getNickname(), 0);
     }
@@ -385,10 +409,12 @@ void Server::privmsg(Message &message)
     }
 }
 
-// kick param : <channel> <user>인데 . . 여러명도 가능이라면 ? 자살
+// KICK <channel> <user> (<reason>) 인데 . . 여러명도 가능이라면 ? 자살
 void Server::kick(Message &message)
 {
     // 인자 있는지 확인
+    std::string a = NULL;
+
     if (message.getArg()[0].empty() || message.getArg()[1].empty())
     {
         // error 461 "<client> <command> :Not enough parameters"
@@ -420,7 +446,7 @@ void Server::kick(Message &message)
     }
 
     std::string kickName = message.getArg()[1];
-    std::map<std::string, int>::iterator iterNick = members.find(kickName);
+    iterNick = members.find(kickName);
     if (iterNick == members.end()) // kick할 사람이 그 채널 속 유저가 아님
     {
         // error 441 "<client> <nick> <channel> :They aren't on that channel"
@@ -428,8 +454,8 @@ void Server::kick(Message &message)
     }
 
     members.erase(kickName);
+    // 관련 메시지 전송
     return;
-
     /*
         std::map<std::string, int>::iterator iter = members.find(nickname);
 
@@ -445,4 +471,134 @@ void Server::kick(Message &message)
         }
         return;
     */
+}
+
+// TOPIC <channel> (<topic>)
+void Server::topic(Message &message)
+{
+    // 인자 있는지 확인
+    if (message.getArg()[0].empty())
+    {
+        // error 461 "<client> <command> :Not enough parameters"
+        return;
+    }
+
+    // 채널 있는지 확인
+    std::string channelName = message.getArg()[0];
+    std::map<std::string, Channel>::iterator iterCh =
+        this->channel.find(channelName);
+    if (iterCh == this->channel.end())
+    {
+        // error 403 "<client> <channel> :No such channel"
+        return;
+    }
+
+    std::string nickname = socketFdToClient[message.getSocket()].getNickname();
+    std::map<std::string, int> members = iterCh->second.getMembers();
+    std::map<std::string, int>::iterator iterNick = members.find(nickname);
+    if (iterNick == members.end()) // 호출한 사람이 그 채널 속 유저가 아님
+    {
+        // error 442 "<client> <channel> :You're not on that channel"
+        return;
+    }
+    if (iterNick->second != 1) // 호출한 사람이 채널에 있긴 한데 방장이 아님
+    {
+        // error 482 "<client> <channel> :You're not channel operator"
+        return;
+    }
+
+    // 주제 인자 있는지 확인 -> 없으면 RPL_NOTOPIC (331)
+    std::string topic = iterCh->second.getTopic();
+    topic = message.getArg()[1]; //이거 없으면 세그나니까 에러처리 필수
+    // 관련 메시지 전송
+    return;
+}
+
+// INVITE <nickname> <channel>
+void Server::invite(Message &message)
+{
+    // 인자 모두 있는지 확인
+    if (message.getArg()[0].empty() || message.getArg()[1].empty())
+    {
+        // error 461 "<client> <command> :Not enough parameters"
+        return;
+    }
+
+    // 채널 있는지 확인
+    std::string channelName = message.getArg()[1];
+    std::map<std::string, Channel>::iterator iterCh =
+        this->channel.find(channelName);
+    if (iterCh == this->channel.end())
+    {
+        // error 403 "<client> <channel> :No such channel"
+        return;
+    }
+
+    std::string nickname = socketFdToClient[message.getSocket()].getNickname();
+    std::map<std::string, int> members = iterCh->second.getMembers();
+    std::map<std::string, int>::iterator iterNick = members.find(nickname);
+    if (iterNick == members.end()) // 호출한 사람이 그 채널 속 유저가 아님
+    {
+        // error 442 "<client> <channel> :You're not on that channel"
+        return;
+    }
+    if (iterNick->second != 1) // 호출한 사람이 채널에 있긴 한데 방장이 아님
+    {
+        // error 482 "<client> <channel> :You're not channel operator"
+        return;
+    }
+
+    std::string newMemberName = message.getArg()[0];
+    iterNick = members.find(newMemberName);
+    if (iterNick != members.end()) // 초대할 사람이 이미 채널에 있음
+    {
+        // error 443 : "<client> <nick> <channel> :is already on channel"
+        return;
+    }
+    iterCh->second.setMembers(newMemberName, 0);
+    // 관련 메시지 전송
+    return;
+/*
+    members[nickname] = 0; // 기본 멤버로 초대
+*/
+}
+
+// MODE <channel> (<modestring> <mode arguments>)
+// If <modestring> is not given, the RPL_CHANNELMODEIS (324) numeric is returned. 
+void Server::mode(Message &message) // 아직 하는 중
+{
+    // 인자 있는지 확인
+    if (message.getArg()[0].empty())
+    {
+        // error 461 "<client> <command> :Not enough parameters"
+        return;
+    }
+
+    // 채널 있는지 확인
+    std::string channelName = message.getArg()[0];
+    std::map<std::string, Channel>::iterator iterCh =
+        this->channel.find(channelName);
+    if (iterCh == this->channel.end())
+    {
+        // error 403 "<client> <channel> :No such channel"
+        return;
+    }
+
+    std::string nickname = socketFdToClient[message.getSocket()].getNickname();
+    std::map<std::string, int> members = iterCh->second.getMembers();
+    std::map<std::string, int>::iterator iterNick = members.find(nickname);
+    if (iterNick == members.end()) // 호출한 사람이 그 채널 속 유저가 아님
+    {
+        // error 442 "<client> <channel> :You're not on that channel"
+        return;
+    }
+    if (iterNick->second != 1) // 호출한 사람이 채널에 있긴 한데 방장이 아님
+    {
+        // error 482 "<client> <channel> :You're not channel operator"
+        return;
+    }
+
+
+    // 관련 메시지 전송
+    return;
 }

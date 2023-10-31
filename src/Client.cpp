@@ -20,7 +20,6 @@ void Client::setUsername(std::string username)
     this->username = username;
 }
 
-
 void Client::setNickname(std::string nickname)
 {
 	this->nickname = nickname;
