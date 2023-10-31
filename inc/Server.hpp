@@ -49,7 +49,8 @@ class Server
     std::map<std::string, int> nicknameToSocketFd;
     std::map<int, Client> socketFdToClient;
     // TODO: 채널 이름 to Channel map
-    std::list<Channel> channel;
+    //std::list<Channel> channel;
+    std::map<std::string, Channel> channel;
 
     Server();
 
@@ -75,7 +76,6 @@ class Server
     void privmsg(Message &message);
     void ping(Message &message);
     void pong(Message &message);
-    //void join(std::string channel); -> message 예외 처리 생각해서 message 그냥 들고감.
     void join(Message &message);
     void part(std::string channel, std::string reason); // 채널 퇴장
     void quit(std::string reason);                      // 서버 접속 끊기

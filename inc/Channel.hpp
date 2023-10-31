@@ -19,18 +19,17 @@ public:
     Channel(const std::string &name);
     ~Channel();
 
-
     void setMembers(const std::string &nickname, const int operator_check);
 
     const std::string &getName() const;
     const std::string &getTopicTitle() const;
     const std::map<std::string, int> &getMembers() const;
 
-
     void topic(const std::string &newtopicTitle);
     void mode();
     int kick(const std::string &nickname);
     void invite(const std::string &nickname);
+    void printMember();
 };
 
 

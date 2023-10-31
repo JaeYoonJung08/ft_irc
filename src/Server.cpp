@@ -205,30 +205,21 @@ void Server::terminateConnection(int fd, struct kevent event)
 void Server::execCommand(Message message)
 {
     if (message.getCommand() == "PASS")
-    {
         pass(message);
-    }
     else if (message.getCommand() == "NICK")
-    {
         nick(message);
-    }
     else if (message.getCommand() == "USER")
-    {
         user(message);
-    }
     else if (message.getCommand() == "PRIVMSG")
-    {
         privmsg(message);
-    }
     else if (message.getCommand() == "PING")
-    {
         ping(message);
-    }
     else if (message.getCommand() == "JOIN")
-    {
         join(message);
-    }
-    // 등등...
+    // else if (message.getCommand() == "PART")
+    //     part(message);
+    // TODO : KICK, INVITE, MODE, TOPIC - operators only
+    // TODO : PART, QUIT, EXIT
 }
 
 void Server::join(Message &message)
@@ -239,38 +230,67 @@ void Server::join(Message &message)
         std::cout << "fuck error\n";
         return;
     }
-
     std::cout << "Here\n";
-    std::list<Channel>::iterator iter = this->channel.begin();
+    
     std::string channel_name = message.getArg()[0];
-    for (; iter != channel.end(); iter++)
-    {
-        if (channel_name == iter->getName())
-            break;
-    }
+    std::map<std::string, Channel>::iterator iter = this->channel.find(channel_name);
+
     // 채널이 없을 경우 생성
     if (iter == this->channel.end())
     {
-
-        std::cout << "Here\n";
         Channel newChannel(channel_name);
         newChannel.setMembers(
             socketFdToClient[message.getSocket()].getNickname(), 1);
-        this->channel.push_back(newChannel);
+        //this->channel[channel_name] = newChannel;
+        channel.insert(make_pair(channel_name, newChannel));
+
+        //출력해보기
+        // iter = channel.begin();
+        // for ( ; iter != channel.end(); iter++)
+        // {
+        //     std::cout << "channel -> channel_name : " << iter->first<<std::endl;
+        //     iter->second.printMember();
+        // }
+        
     }
     // 채널이 있을 경우 그냥 들어가기
     else
     {
         std::cout << "원래 있다 쉐캬\n";
-        iter->setMembers(socketFdToClient[message.getSocket()].getNickname(),
+        iter->second.setMembers(socketFdToClient[message.getSocket()].getNickname(),
                          0);
     }
 }
 
-// void Server::join(std::string channel)
-// {
+void Server::part(Message &message)
+{
+    if (message.getArg()[0].empty())
+    {
+        std::cout << "no arg error\n";
+        return;
+    }
 
-// }
+    std::string channelName = message.getArg()[0];
+    std::map<std::string, Channel>::iterator iterCh = this->channel.find(channelName);
+    if (iterCh == this->channel.end())    // 나갈 채널이 없을 경우
+    {
+        std::cout << channelName << ":No such channel\n";
+        return ;
+    }
+
+    std::string nickname = socketFdToClient[message.getSocket()].getNickname();
+    std::map<std::string, int> members = iterCh->second.getMembers();
+    std::map<std::string, int>::iterator iterNick = members.find(nickname);
+    if (iterNick == members.end())     // 채널은 있는데 그 채널 속 유저가 아님
+    {
+        std::cout << channelName << ":You're not on that channel\n";
+        return ;
+    }
+    else    //채널 있고, 그 채널 속 유저임 -> 채널 나갈거임 !
+    {
+
+    }
+}
 
 void Server::ping(Message &message)
 {
