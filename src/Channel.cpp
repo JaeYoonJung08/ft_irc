@@ -9,6 +9,11 @@ Channel::Channel(const std::string &name) : name(name)
     this->topicTitle = "";
 }
 
+void Channel::setMembers(const std::string &nickname, const int operator_check)
+{
+    this->members[nickname] = operator_check;
+}
+ 
 const std::string &Channel::getName() const 
 {
     return name;
@@ -48,6 +53,8 @@ int Channel::kick(const std::string &nickname)
         members.erase(nickname);
         // TODO : kick 되었다고 전송?
     }
+
+    return 0;
 }
 
 void Channel::invite(const std::string &nickname)

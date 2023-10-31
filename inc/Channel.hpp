@@ -20,10 +20,12 @@ public:
     ~Channel();
 
 
+    void setMembers(const std::string &nickname, const int operator_check);
 
     const std::string &getName() const;
     const std::string &getTopicTitle() const;
     const std::map<std::string, int> &getMembers() const;
+
 
     void topic(const std::string &newtopicTitle);
     void mode();
