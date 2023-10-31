@@ -82,11 +82,9 @@ class Server
 
     /* operators */
     void kick(Message &message);
-    void kick(std::string channel, std::string nickname,
-              std::string reason); // reason 없어도됨
-    void invite(std::string nickname, std::string channel);
-    void mode(std::string channel, std::string mode);
-    void topic(std::string channel, std::string topic); // topic은 없어도됨
+    void topic(Message &message);
+    void invite(Message &message);
+    void mode(Message &message);
 };
 
 #endif

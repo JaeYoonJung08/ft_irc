@@ -6,7 +6,13 @@ Channel::~Channel() {}
 
 Channel::Channel(const std::string &name) : name(name)
 {
-    this->topicTitle = "";
+    this->topic = "";
+    this->password = "";
+    MODE_I = false;
+    MODE_T = false;
+    MODE_K = false;
+    MODE_O = false;
+    MODE_L = false;
 }
 
 void Channel::setMembers(const std::string &nickname, const int operator_check)
@@ -17,23 +23,13 @@ void Channel::setMembers(const std::string &nickname, const int operator_check)
 
 const std::string &Channel::getName() const { return name; }
 
-const std::string &Channel::getTopicTitle() const { return topicTitle; }
+const std::string &Channel::getTopic() const { return topic; }
+
+const std::string &Channel::getPassword() const { return password; }
 
 const std::map<std::string, int> &Channel::getMembers() const
 {
     return members;
-}
-
-void Channel::topic(const std::string &newtopicTitle)
-{
-    this->topicTitle = newtopicTitle;
-}
-
-void Channel::mode() {}
-
-void Channel::invite(const std::string &nickname)
-{
-    members[nickname] = 0; // 기본 멤버로 초대
 }
 
 void Channel::printMember()
@@ -45,4 +41,29 @@ void Channel::printMember()
     // {
     //     std::cout << "channel -> member : " << iter->first << std::endl;
     // }
+}
+
+const bool &Channel::getMODE_I() const
+{
+    return this->MODE_I;
+}
+
+const bool &Channel::getMODE_T() const
+{
+    return this->MODE_I;
+}
+
+const bool &Channel::getMODE_K() const
+{
+    return this->MODE_I;
+}
+
+const bool &Channel::getMODE_O() const
+{
+    return this->MODE_I;
+}
+
+const bool &Channel::getMODE_L() const
+{
+    return this->MODE_I;
 }

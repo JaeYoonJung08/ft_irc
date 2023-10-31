@@ -71,6 +71,7 @@ void Message::parse(std::string msg)
 	for (; i < msg_split.size(); i++)
 		this->argument.push_back(msg_split[i]);
 }
+
 Message::Message(int socket,
                  const std::string &prefix,
                  const std::string &command,
@@ -110,4 +111,3 @@ void Message::sendToPong()
     toSend += "\r\n";
     send(socket, toSend.c_str(), toSend.size(), MSG_DONTWAIT); // non-block으로 전송
 }
-

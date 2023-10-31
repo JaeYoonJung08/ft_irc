@@ -51,5 +51,7 @@ PART 명령어 : 채널 떠나는 역할인데 server에서 하실지 channel에
 3. 파란 앵무새 봇
 
 ## 나키짱
-PART, KICK 만듦
+PART, KICK, TOPIC, INVITE 만듦 + MODE도 제가할게염
 근데 방장이 채널 떠나면 주석 적어둔 경우 중에 뭘로 할지 정해야댐
++
+제가만든 함수들 전부 공통 에러처리 넣어놨는데 다 너무 중복되니까 가능한 건 message class로 옮기는 게 좋을듯
