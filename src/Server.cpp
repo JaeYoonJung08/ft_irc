@@ -95,24 +95,25 @@ void Server::run()
             else
             { // 기존 접속
                 std::cout << "기존 접속!" << std::endl;
-                //naki님이 말씀하신 서버에서 클라이언트로 우째 보내노 라는 질문을
-                //여기서 해결할 것임
-                //kevent 구조체 안에는 filter라는 게 있음 이 친구들을 통해 
-                //서버에서 소켓을 받는지, 클라이언트한테 보내줄 것인지를 결정
+                // naki님이 말씀하신 서버에서 클라이언트로 우째 보내노 라는
+                // 질문을 여기서 해결할 것임 kevent 구조체 안에는 filter라는 게
+                // 있음 이 친구들을 통해 서버에서 소켓을 받는지, 클라이언트한테
+                // 보내줄 것인지를 결정
                 if (events[i].filter == EVFILT_READ)
                 {
-                    //기존 handleExistingConnection
-                    //여기 이 부분이 클라이언트가 서버로 패킷을 보낼 경우
+                    // 기존 handleExistingConnection
+                    // 여기 이 부분이 클라이언트가 서버로 패킷을 보낼 경우
 
-                    //여기서 이제해야할 거 개행을 찾지 못한 경우와 개행을 찾은 경우을 나누어야함.
-                    //함수 수정해주자
+                    // 여기서 이제해야할 거 개행을 찾지 못한 경우와 개행을 찾은
+                    // 경우을 나누어야함. 함수 수정해주자
                     handleExistingConnection(events[i].ident, events[i]);
                 }
                 // else if (events[i].filter == EVFILT_WRITE)
                 // {
                 //     //새롭게 추가 된 거
                 //     //서버가 클라리언트로 패킷을 보낼 경우
-                //     handleExistingConnection_send_client(events[i].ident, events[i]);
+                //     handleExistingConnection_send_client(events[i].ident,
+                //     events[i]);
                 // }
             }
         }
@@ -137,19 +138,17 @@ void Server::handleNewConnection(int sockFd)
     socketFdToClient.insert(std::make_pair(newFd, client));
 }
 
-
 /* 서버가 클라이언트한테 소켓을 보낼 때*/
 void Server::handleExistingConnection_send_client(int fd, struct kevent event)
 {
-    //서버가 클라이언트한테 소캣을 보내는 경우,,?
-    int send_data = send(fd, "awd", 3,0);
-
+    // 서버가 클라이언트한테 소캣을 보내는 경우,,?
+    int send_data = send(fd, "awd", 3, 0);
 
     std::cout << "HERE!!\n";
     if (send_data < 0)
     {
         std::cout << "Error: Sending data failed" << std::endl;
-        return ;
+        return;
     }
 }
 
@@ -183,7 +182,6 @@ void Server::handleExistingConnection(int fd, struct kevent event)
     {
         execCommand(Message(fd, messages[i]));
     }
-
 }
 
 bool Server::isConnected(int fd, struct kevent event)
@@ -226,31 +224,77 @@ void Server::execCommand(Message message)
     {
         ping(message);
     }
+    else if (message.getCommand() == "JOIN")
+    {
+        join(message);
+    }
     // 등등...
 }
+
+void Server::join(Message &message)
+{
+    // 채널 이름이 들어가야함. name
+    if (message.getArg()[0].empty())
+    {
+        std::cout << "fuck error\n";
+        return;
+    }
+
+    std::cout << "Here\n";
+    std::list<Channel>::iterator iter = this->channel.begin();
+    std::string channel_name = message.getArg()[0];
+    for (; iter != channel.end(); iter++)
+    {
+        if (channel_name == iter->getName())
+            break;
+    }
+    // 채널이 없을 경우 생성
+    if (iter == this->channel.end())
+    {
+
+        std::cout << "Here\n";
+        Channel newChannel(channel_name);
+        newChannel.setMembers(
+            socketFdToClient[message.getSocket()].getNickname(), 1);
+        this->channel.push_back(newChannel);
+    }
+    // 채널이 있을 경우 그냥 들어가기
+    else
+    {
+        std::cout << "원래 있다 쉐캬\n";
+        iter->setMembers(socketFdToClient[message.getSocket()].getNickname(),
+                         0);
+    }
+}
+
+// void Server::join(std::string channel)
+// {
+
+// }
 
 void Server::ping(Message &message)
 {
 
     if (message.getArg()[0].empty())
-	{
-        const std::string& error_message = ":irc.local  461 * " \
-        + message.getCommand() + " :Not enough parameters";
-		return ;
-	}
+    {
+        const std::string &error_message = ":irc.local  461 * " +
+                                           message.getCommand() +
+                                           " :Not enough parameters";
+        return;
+    }
     std::cout << ":irc.local PONG " + message.getArg()[0] << std::endl;
-    //pong 메세지 넣어주어야함.
+    // pong 메세지 넣어주어야함.
     pong(message);
-
 }
 
 void Server::pong(Message &message)
 {
-    
+
     std::vector<std::string> textToBeSent;
     for (int i = 0; i < message.getArg().size(); i++)
         textToBeSent.push_back(message.getArg()[i]);
-    std::string prefix = ":" + socketFdToClient[message.getSocket()].getNickname();
+    std::string prefix =
+        ":" + socketFdToClient[message.getSocket()].getNickname();
 
     Message toSendMessage(message.getSocket(), prefix, "PONG", textToBeSent);
     toSendMessage.sendToPong();
@@ -260,8 +304,8 @@ void Server::pass(Message &message)
 {
     if (this->password != message.getArg()[0])
     {
-        //std::cout << message.getArg()[0] << "password error" << std::endl;
-        // TODO : 비밀번호 에러 전송 후 종료
+        // std::cout << message.getArg()[0] << "password error" << std::endl;
+        //  TODO : 비밀번호 에러 전송 후 종료
     }
 }
 
@@ -271,12 +315,13 @@ void Server::nick(Message &message)
     std::string newNickname = message.getArg()[0];
 
     std::map<int, Client>::iterator iter = socketFdToClient.find(socket);
-    std::map<std::string, int>::iterator iterNicknameToSocket = nicknameToSocketFd.find(newNickname);
-
+    std::map<std::string, int>::iterator iterNicknameToSocket =
+        nicknameToSocketFd.find(newNickname);
 
     if (iterNicknameToSocket == nicknameToSocketFd.end()) // nickname 중복 아님
     {
-        if (iter->second.getNickname() != "") // 이미 닉네임이 설정된 유저의 경우 - 변경
+        if (iter->second.getNickname() !=
+            "") // 이미 닉네임이 설정된 유저의 경우 - 변경
         {
             nicknameToSocketFd.erase(iter->second.getNickname());
         }
@@ -292,22 +337,25 @@ void Server::nick(Message &message)
 
 void Server::user(Message &message)
 {
-    this->socketFdToClient[message.getSocket()]
-        .setUsername(message.getArg()[0]);
+    this->socketFdToClient[message.getSocket()].setUsername(
+        message.getArg()[0]);
 }
 
 void Server::privmsg(Message &message)
 {
-    std::vector<std::string> receivers = split(message.getArg()[0], ','); // 수신자 여러명 쪼갬
+    std::vector<std::string> receivers =
+        split(message.getArg()[0], ','); // 수신자 여러명 쪼갬
     std::vector<std::string> textToBeSent;
-    for (int i = 1; i < message.getArg().size(); i++) // arg에서 수신자 닉네임 뒤 부터 다 집어넣음
+    for (int i = 1; i < message.getArg().size();
+         i++) // arg에서 수신자 닉네임 뒤 부터 다 집어넣음
         textToBeSent.push_back(message.getArg()[i]);
-    std::string prefix = ":" + socketFdToClient[message.getSocket()].getNickname(); // 출처 추가
+    std::string prefix =
+        ":" + socketFdToClient[message.getSocket()].getNickname(); // 출처 추가
 
     for (int i = 0; i < receivers.size(); i++)
     {
-        Message toSendMessage(nicknameToSocketFd[receivers[i]], prefix, "PRIVMSG", textToBeSent);
+        Message toSendMessage(nicknameToSocketFd[receivers[i]], prefix,
+                              "PRIVMSG", textToBeSent);
         toSendMessage.sendToClient();
     }
 }
-

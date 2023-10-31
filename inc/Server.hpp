@@ -13,9 +13,11 @@
 #include <unistd.h>
 
 #include <map>
+#include <list>
 
 #include "../inc/Client.hpp"
 #include "../inc/Message.hpp"
+#include "../inc/Channel.hpp"
 
 #define LISTEN_BACKLOG_NUM 5 // listen 에서 대기 큐 갯수.
 
@@ -47,6 +49,7 @@ class Server
     std::map<std::string, int> nicknameToSocketFd;
     std::map<int, Client> socketFdToClient;
     // TODO: 채널 이름 to Channel map
+    std::list<Channel> channel;
 
     Server();
 
@@ -72,7 +75,8 @@ class Server
     void privmsg(Message &message);
     void ping(Message &message);
     void pong(Message &message);
-    void join(std::string channel);
+    //void join(std::string channel); -> message 예외 처리 생각해서 message 그냥 들고감.
+    void join(Message &message);
     void part(std::string channel, std::string reason); // 채널 퇴장
     void quit(std::string reason);                      // 서버 접속 끊기
     void exit(void); // 서버 접속 끊고 프로그램 종료
