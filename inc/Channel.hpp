@@ -2,19 +2,18 @@
 #define CHANNEL_HPP
 
 #include <iostream>
+#include <iterator>
 #include <map>
 #include <string>
-#include <iterator>
 
-
-class Channel {
-private:
+class Channel
+{
+  private:
     std::string name;
     std::string topicTitle;
     std::map<std::string, int> members; // 0 : member, 1 : operator
 
-
-public:
+  public:
     Channel();
     Channel(const std::string &name);
     ~Channel();
@@ -27,10 +26,8 @@ public:
 
     void topic(const std::string &newtopicTitle);
     void mode();
-    int kick(const std::string &nickname);
     void invite(const std::string &nickname);
     void printMember();
 };
-
 
 #endif
