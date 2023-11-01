@@ -7,12 +7,12 @@ Channel::~Channel() {}
 Channel::Channel(const std::string &name) : name(name)
 {
     this->topic = "";
-    this->password = "";
+    this->key = "";
+    this->limit = 0;
     MODE_I = false;
     MODE_T = false;
-    MODE_K = false;
-    MODE_O = false;
-    MODE_L = false;
+    // MODE_K = false;
+    // MODE_L = false;
 }
 
 void Channel::setMembers(const std::string &nickname, const int operator_check)
@@ -25,7 +25,9 @@ const std::string &Channel::getName() const { return name; }
 
 const std::string &Channel::getTopic() const { return topic; }
 
-const std::string &Channel::getPassword() const { return password; }
+const std::string &Channel::getKey() const { return key; }
+
+const int &Channel::getLimit() const { return limit; }
 
 const std::map<std::string, int> &Channel::getMembers() const
 {
@@ -43,27 +45,13 @@ void Channel::printMember()
     // }
 }
 
-const bool &Channel::getMODE_I() const
-{
-    return this->MODE_I;
-}
+const bool &Channel::getMODE_I() const { return this->MODE_I; }
 
-const bool &Channel::getMODE_T() const
-{
-    return this->MODE_I;
-}
+const bool &Channel::getMODE_T() const { return this->MODE_I; }
 
-const bool &Channel::getMODE_K() const
-{
-    return this->MODE_I;
-}
+// const bool &Channel::getMODE_K() const
+// {
+//     return this->MODE_I;
+// }
 
-const bool &Channel::getMODE_O() const
-{
-    return this->MODE_I;
-}
-
-const bool &Channel::getMODE_L() const
-{
-    return this->MODE_I;
-}
+// const bool &Channel::getMODE_L() const { return this->MODE_I; }

@@ -12,12 +12,12 @@ class Channel
     std::string name;
     std::string topic;
     std::map<std::string, int> members; // 0 : member, 1 : operator
-    std::string password;
-    bool  MODE_I;
-    bool  MODE_T;
-    bool  MODE_K;
-    bool  MODE_O;
-    bool  MODE_L;
+    std::string key;
+    int limit;
+    bool MODE_I;
+    bool MODE_T;
+    // bool MODE_K;
+    // bool MODE_L;
 
   public:
     Channel();
@@ -29,13 +29,13 @@ class Channel
     const std::string &getName() const;
     const std::string &getTopic() const;
     const std::map<std::string, int> &getMembers() const;
-    const std::string &Channel::getPassword() const;
+    const std::string &Channel::getKey() const;
+    const int &getLimit() const;
 
     const bool &Channel::getMODE_I() const;
     const bool &Channel::getMODE_T() const;
-    const bool &Channel::getMODE_K() const;
-    const bool &Channel::getMODE_O() const;
-    const bool &Channel::getMODE_L() const;
+    // const bool &Channel::getMODE_K() const;
+    // const bool &Channel::getMODE_L() const;
 
     void printMember();
 };
