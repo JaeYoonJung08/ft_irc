@@ -21,18 +21,18 @@
 
 enum Cmd
 {
-	PASS,
-	NICK,
-	USER,
-	PRIVMSG,
-	JOIN,
-	PART,
-	QUIT,
-	EXIT,
-	KICK,
-	INVITE,
-	MODE,
-	TOPIC
+    PASS,
+    NICK,
+    USER,
+    PRIVMSG,
+    JOIN,
+    PART,
+    QUIT,
+    EXIT,
+    KICK,
+    INVITE,
+    MODE,
+    TOPIC
 };
 
 class Server
@@ -57,7 +57,7 @@ class Server
     void init();
     void run();
     void handleNewConnection(int sockFd);
-    void handleExistingConnection(int fd, struct kevent event);
+    void handleExistingConnection(int sockFd, struct kevent event);
     bool isConnected(int fd, struct kevent event);
     void terminateConnection(int fd, struct kevent event);
     void execCommand(Message message);

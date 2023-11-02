@@ -57,7 +57,7 @@ void Server::openSocket()
              sizeof(serverAddr)) == -1)
         throw std::runtime_error("bind error");
     listen(this->serverSocket, LISTEN_BACKLOG_NUM); // 수신하도록 listen
-                                                    // tcp 연결 완료.
+    // tcp 연결 완료.
 }
 
 void Server::init()
@@ -85,16 +85,12 @@ void Server::run()
             throw std::runtime_error("kevent event error");
         for (int i = 0; i < triggered; i++)
         {
-            if ((int)events[i].ident ==
-                this->serverSocket) // 소켓에서 이벤트 발생
+            if ((int) events[i].ident == this->serverSocket) // 소켓에서 이벤트 발생
             {
-                std::cout << "새로운 접속!" << std::endl;
-                // 새로운 접속 처리
                 handleNewConnection(events[i].ident);
             }
             else
-            { // 기존 접속
-                std::cout << "기존 접속!" << std::endl;
+            {
                 handleExistingConnection(events[i].ident, events[i]);
             }
         }
@@ -107,8 +103,8 @@ void Server::handleNewConnection(int sockFd)
     struct kevent event;
     int client_addr_size = sizeof(client_addr);
 
-    int newFd = accept(sockFd, (sockaddr *)&client_addr,
-                       (socklen_t *)&client_addr_size);
+    int newFd = accept(sockFd, (sockaddr *) &client_addr,
+                       (socklen_t *) &client_addr_size);
     if (newFd == -1)
         throw std::runtime_error("accept error");
     fcntl(newFd, F_SETFL, O_NONBLOCK); // non-block 설정
@@ -117,40 +113,23 @@ void Server::handleNewConnection(int sockFd)
 
     Client client(newFd);
     socketFdToClient.insert(std::make_pair(newFd, client));
+
+    std::cout << newFd << " : new connect!" << std::endl;
 }
 
-#define RED "\e[0;31m"
-#define NC "\e[0m"
-
-void Server::handleExistingConnection(int fd, struct kevent event)
+void Server::handleExistingConnection(int sockFd, struct kevent event)
 {
-    if (isConnected(fd, event) == false)
+    if (isConnected(sockFd, event) == false)
     {
-        this->terminateConnection(fd, event);
+        this->terminateConnection(sockFd, event);
         return;
     }
 
-    char buffer[1024];
+    std::cout << "--------" << sockFd << "--------" << std::endl;
 
-    memset(buffer, 0, sizeof(buffer));
-
-    int received = recv(fd, buffer, sizeof(buffer), 0);
-    // 만약 데이터 수신이 실패한 경우 오류 메세지
-    if (received < 0)
-    {
-        std::cout << "Error: Receving data failed" << std::endl;
-        return;
-    }
-    std::cout << RED << buffer << NC << std::endl;
-
-    std::vector<std::string> messages = split(buffer, '\n');
-
+    std::vector<Message> messages = this->socketFdToClient[sockFd].readData();
     for (int i = 0; i < messages.size(); i++)
-    {
-        execCommand(Message(fd, messages[i]));
-    }
-
-    // std::cout << buffer << std::endl;
+        execCommand(messages[i]);
 }
 
 bool Server::isConnected(int fd, struct kevent event)
@@ -208,7 +187,6 @@ void Server::nick(Message &message)
 
     std::map<int, Client>::iterator iter = socketFdToClient.find(socket);
     std::map<std::string, int>::iterator iterNicknameToSocket = nicknameToSocketFd.find(newNickname);
-
 
     if (iterNicknameToSocket == nicknameToSocketFd.end()) // nickname 중복 아님
     {
