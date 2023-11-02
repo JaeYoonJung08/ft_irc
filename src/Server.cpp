@@ -228,6 +228,26 @@ void Server::execCommand(Message message)
     // TODO : QUIT, EXIT
 }
 
+
+int Server::joinChannelNameCheck(std::string name)
+{
+
+    //1번인 & # + !이 오는지 검사, 길이가 50이하 인지 검사
+    if (!(name[0] == '&' || name[0] == '#' || name[0] == '+' || name[0] == '!' || name.size() <= 50))
+        return false;
+    
+    //2번 공백 검사, 컨트롤 G 검사, 쉼표 검사 이 3가지가 오면 안 됨
+    int index = 0; 
+    while (name[index])
+    {
+        if (isspace(name[index] != 0) || name[index] == 7 || name[index] == ',')
+            return false;
+        index++;
+    }
+
+    return true;
+}
+
 void Server::join(Message &message)
 {
     // 채널 이름이 들어가야함. name
@@ -245,6 +265,13 @@ void Server::join(Message &message)
     // 채널이 없을 경우 생성
     if (iter == this->channel.end())
     {
+        //JOIN 1번 상황 채널 이름은 최대 50자 길이의 문자열('&', '#', '+' 또는 '!' 문자로 시작)입니다.
+        if (joinChannelNameCheck(channel_name) == 0)
+        {
+
+        }
+
+
         Channel newChannel(channel_name);
         newChannel.setMembers(
             socketFdToClient[message.getSocket()].getNickname(), 1);
@@ -279,7 +306,6 @@ void Server::join(Message &message)
             }
             else // 비밀 번호 틀렷을 때 에러 처리
             {
-
                 return;
             }
         }
@@ -349,13 +375,88 @@ void Server::pong(Message &message)
     toSendMessage.sendToPong();
 }
 
+
+
+void Server::password_incorrect_464(Message &message)
+{
+	//std::string nick_msg = ":irc_local 464 User :Password Incorrect, Server disconnected";
+    //"<clint> :Password incorrect" 
+    std::string error_message = " :irc_local 464 :Password Incorrect, Server disconnected";
+    std::cout << message.getSocket() << error_message << std::endl; 
+}
+
+void	Server::command_empty_argument_461(Message &message)
+{
+	std::string error_message = " :irc_local 461 :Not enough parameters";
+    //"<client> <command> :Not enough parameters"
+    std::cout << message.getSocket()<< " " << message.getCommand() << error_message << std::endl; 
+}
+
+
+void	Server::nick_duplicate_check_433(Message &message)
+{
+	std::string error_message = " :irc_local 433 :Nickname is already in use";
+    //"<client> <nick> :Nickname is already in use"
+    std::cout << message.getSocket()<< " " << this->nicknameToSocketFd[message.getArg()[0]] << error_message << std::endl; 
+}
+
+void	Server::nick_empty_argument_431(Message &message)
+{
+	std::string error_message = " :irc_local 431 :No nickname given";
+    //"<client> :No nickname given"
+    std::cout << message.getSocket() << error_message << std::endl; 
+}
+
+void Server::kick_no_such_channel_403(Message &message)
+{
+    std::string error_message = " :irc_local 403 :No such channel";
+    //  "<client> <channel> :No such channel"
+    std::cout << message.getSocket() << " " << message.getArg()[0] << error_message << std::endl;
+}
+
+void Server::kick_no_member_channel_442(Message &message)
+{
+    std::string error_message = " :irc_local 442 :You're not on that channel";
+    //"<client> <channel> :You're not on that channel"
+    std::cout << message.getSocket() << " " << message.getArg()[0] << error_message << std::endl;
+}
+
+void Server::kick_no_operator_channel_482(Message &message)
+{
+
+    std::string error_message = " :irc_local 482 :You're not channel operator";
+     // error 482 "<client> <channel> :You're not channel operator"
+    std::cout << message.getSocket() << " " << message.getArg()[0] << error_message << std::endl;
+}
+   
+
+
+void Server::kick_no_users_channel_441(Message &message)
+{
+    std::string error_message = " :irc_local 482 :They aren't on that channel";
+    // error 441 "<client> <nick> <channel> :They aren't on that channel"
+    std::cout << message.getSocket() << " " << message.getArg()[0] << " " << message.getArg()[1] << error_message << std::endl;
+}
+   
+
+
 void Server::pass(Message &message)
 {
+    //전달된 파라미터가 없을 때
+    if (message.getArg()[0].empty())
+    {
+        command_empty_argument_461(message);
+        return ;
+    }
+
+    //비밀번호가 틀렸을 경우 ERR_PASSWDMISMATCH (464)
     if (this->password != message.getArg()[0])
     {
-        // std::cout << message.getArg()[0] << "password error" << std::endl;
-        //  TODO : 비밀번호 에러 전송 후 종료
+        password_incorrect_464(message);
+        return ;
     }
+
+    //ERR_ALREADYREGISTERED (462) -> 이거는 잘 모르겠음 안해도 될 것 같은데,,
 }
 
 void Server::nick(Message &message)
@@ -363,14 +464,20 @@ void Server::nick(Message &message)
     int socket = message.getSocket();
     std::string newNickname = message.getArg()[0];
 
+    //Nickname이 empty일 때
+    if (newNickname.empty())
+    {
+        nick_empty_argument_431(message);
+        return ;
+    }
+
     std::map<int, Client>::iterator iter = socketFdToClient.find(socket);
     std::map<std::string, int>::iterator iterNicknameToSocket =
         nicknameToSocketFd.find(newNickname);
 
     if (iterNicknameToSocket == nicknameToSocketFd.end()) // nickname 중복 아님
     {
-        if (iter->second.getNickname() !=
-            "") // 이미 닉네임이 설정된 유저의 경우 - 변경
+        if (iter->second.getNickname() != "") // 이미 닉네임이 설정된 유저의 경우 - 변경
         {
             nicknameToSocketFd.erase(iter->second.getNickname());
         }
@@ -381,13 +488,27 @@ void Server::nick(Message &message)
     {
         std::cout << newNickname << " : nick 중복" << std::endl;
         // TODO : Nickname 중복 에러 전송
+        //ERR_NICKNAMEINUSE (433)
+        nick_duplicate_check_433(message);
+        return ;
+
     }
+    //    * ERR_NICKCOLLISION (436) -> 다른 서버 중복 닉네임인 것 같은데 할 필요 x 생각됨.
+    //    * ERR_ERRONEUSNICKNAME (432) -> 이 부분들도 해야될 필요가 있을끼..? 이거는 서버마다 다르다고 말함 
 }
 
 void Server::user(Message &message)
 {
+    //    * ERR_NEEDMOREPARAMS (461) 
+    // 매개변수 충분하지 않음
+    if (message.getArg()[0].empty())
+    {
+        command_empty_argument_461(message);
+        return ;
+    }
     this->socketFdToClient[message.getSocket()].setUsername(
         message.getArg()[0]);
+    //    * ERR_ALREADYREGISTERED (462) -> 이거 할 필요가 없을 듯
 }
 
 void Server::privmsg(Message &message)
@@ -409,6 +530,8 @@ void Server::privmsg(Message &message)
     }
 }
 
+
+
 // KICK <channel> <user> (<reason>) 인데 . . 여러명도 가능이라면 ? 자살
 void Server::kick(Message &message)
 {
@@ -418,6 +541,7 @@ void Server::kick(Message &message)
     if (message.getArg()[0].empty() || message.getArg()[1].empty())
     {
         // error 461 "<client> <command> :Not enough parameters"
+        command_empty_argument_461(message);
         return;
     }
 
@@ -428,6 +552,7 @@ void Server::kick(Message &message)
     if (iterCh == this->channel.end())
     {
         // error 403 "<client> <channel> :No such channel"
+        kick_no_such_channel_403(message);
         return;
     }
 
@@ -437,11 +562,13 @@ void Server::kick(Message &message)
     if (iterNick == members.end()) // 호출한 사람이 그 채널 속 유저가 아님
     {
         // error 442 "<client> <channel> :You're not on that channel"
+        kick_no_member_channel_442(message);
         return;
     }
     if (iterNick->second != 1) // 호출한 사람이 채널에 있긴 한데 방장이 아님
     {
         // error 482 "<client> <channel> :You're not channel operator"
+        kick_no_operator_channel_482(message);
         return;
     }
 
@@ -450,6 +577,7 @@ void Server::kick(Message &message)
     if (iterNick == members.end()) // kick할 사람이 그 채널 속 유저가 아님
     {
         // error 441 "<client> <nick> <channel> :They aren't on that channel"
+        kick_no_users_channel_441(message);
         return;
     }
 
@@ -457,6 +585,7 @@ void Server::kick(Message &message)
     // 관련 메시지 전송
     return;
     /*
+        naki 
         std::map<std::string, int>::iterator iter = members.find(nickname);
 
         if (iter == members.end()) // 유저 존재 x
@@ -471,6 +600,9 @@ void Server::kick(Message &message)
         }
         return;
     */
+
+   //jaeyojun
+   //ERR_BADCHANMASK (476) -> 이거 안함 
 }
 
 // TOPIC <channel> (<topic>)
