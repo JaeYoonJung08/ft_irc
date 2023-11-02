@@ -48,7 +48,6 @@ class Server
     std::map<std::string, int> nicknameToSocketFd;
     std::map<int, Client> socketFdToClient;
     // TODO: 채널 이름 to Channel map
-    // std::list<Channel> channel;
     std::map<std::string, Channel> channel;
 
     Server();
@@ -76,6 +75,7 @@ class Server
     void ping(Message &message);
     void pong(Message &message);
     void join(Message &message);
+    int joinChannelNameCheck(std::string name);
     void part(Message &message);   // 채널 퇴장
     void quit(std::string reason); // 서버 접속 끊기
     void exit(void);               // 서버 접속 끊고 프로그램 종료
@@ -88,6 +88,20 @@ class Server
 
     /* command utils */
     bool setMode(Message &message, Channel channel);
+
+    /* error */
+    void password_incorrect_464(Message &message);
+    void command_empty_argument_461(Message &message);
+
+    /* nick 433, 431 */
+    void	nick_duplicate_check_433(Message &message);
+    void    nick_empty_argument_431(Message &message);
+
+    /* kick 403 */
+    void kick_no_such_channel_403(Message &message);
+    void kick_no_member_channel_442(Message &message);
+    void kick_no_operator_channel_482(Message &message);
+    void kick_no_users_channel_441(Message &message);
 };
 
 #endif

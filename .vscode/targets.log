@@ -7,7 +7,7 @@ make all --print-data-base --no-builtin-variables --no-builtin-rules --question
 
 # This program built for i386-apple-darwin11.3.0
 
-# Make data base, printed on Tue Oct 31 21:43:46 2023
+# Make data base, printed on Thu Nov  2 19:50:43 2023
 
 # Variables
 
@@ -46,13 +46,15 @@ VSCODE_CWD = /
 # environment
 PATH = /Users/jaeyojun/.brew/bin:/Users/jaeyojun/.brew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/munki:/Library/Apple/usr/bin
 # environment
+LaunchInstanceID = 76B67F02-896B-4BC4-AD33-76A56E4B1115
+# environment
 ELECTRON_RUN_AS_NODE = 1
 # makefile (from `Makefile', line 4)
 LDFLAGS := 
 # default
 .FEATURES := target-specific order-only second-expansion else-if archives jobserver check-symlink
 # environment
-SSH_AUTH_SOCK = /private/tmp/com.apple.launchd.ZIh1l6h7tl/Listeners
+SSH_AUTH_SOCK = /private/tmp/com.apple.launchd.HjdRPUQxXv/Listeners
 # makefile (from `Makefile', line 6)
 SRCDIR := src
 # automatic
@@ -116,7 +118,7 @@ MFLAGS = -Rrqp
 # automatic
 *D = $(patsubst %/,%,$(dir $*))
 # environment
-XPC_SERVICE_NAME = com.microsoft.VSCode.1192
+XPC_SERVICE_NAME = com.apple.xpc.launchd.oneshot.0x10000001.Electron
 # automatic
 +D = $(patsubst %/,%,$(dir $+))
 # environment
@@ -125,6 +127,8 @@ VSCODE_L10N_BUNDLE_LOCATION =
 +F = $(notdir $+)
 # environment
 __CF_USER_TEXT_ENCODING = 0x19D9D:0x3:0x33
+# environment
+COMMAND_MODE = unix2003
 # default
 MAKEFILES := 
 # automatic
@@ -133,6 +137,8 @@ MAKEFILES :=
 CXX := c++
 # environment
 LC_ALL = C
+# environment
+SECURITYSESSIONID = 186a6
 # automatic
 ^F = $(notdir $^)
 # default
@@ -144,9 +150,9 @@ MAKELEVEL := 0
 # environment
 LANG = C
 # environment
-VSCODE_PID = 2816
+VSCODE_PID = 3784
 # variable set hash-table stats:
-# Load=67/1024=7%, Rehash=0, Collisions=3/108=3%
+# Load=70/1024=7%, Rehash=0, Collisions=3/111=3%
 
 # Pattern-specific Variable Values
 
@@ -154,11 +160,10 @@ VSCODE_PID = 2816
 
 # Directories
 
-# . (device 16777225, inode 4606848): 10 files, no impossibilities.
-# src (device 16777225, inode 4606955): 11 files, no impossibilities so far.
+# . (device 16777225, inode 4606848): 9 files, no impossibilities.
+# src (device 16777225, inode 4606955): 5 files, no impossibilities so far.
 
- 
-# 21 files, no impossibilities in 2 directories.
+# 14 files, no impossibilities in 2 directories.
 
 # Implicit Rules
 
@@ -175,33 +180,11 @@ VSCODE_PID = 2816
 
 # Files
 
-src/Server.o: src/Server.cpp
-#  Implicit rule search has been done.
-#  Implicit/static pattern stem: `src/Server'
-#  Last modified 2023-10-31 20:21:33
-#  File has been updated.
-#  Needs to be updated (-q is set).
-# automatic
-# @ := src/Server.o
-# automatic
-# % := 
-# automatic
-# * := src/Server
-# automatic
-# + := src/Server.cpp
-# automatic
-# | := 
-# automatic
-# < := src/Server.cpp
-# automatic
-# ^ := src/Server.cpp
-# automatic
-# ? := src/Server.cpp
-# variable set hash-table stats:
-# Load=8/32=25%, Rehash=0, Collisions=1/14=7%
-#  commands to execute (from `Makefile', line 27):
-	$(CXX) $(CXXFLAGS) -c $< -o $@
-	
+# Not a target:
+src/Server.o:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
 
 all: ircserv
 #  Phony target (prerequisite of .PHONY).
@@ -233,11 +216,27 @@ src/Message.o:
 src/main.o: src/main.cpp
 #  Implicit rule search has been done.
 #  Implicit/static pattern stem: `src/main'
-#  Last modified 2023-10-31 19:54:03
+#  File does not exist.
 #  File has been updated.
-#  Successfully updated.
+#  Needs to be updated (-q is set).
+# automatic
+# @ := src/main.o
+# automatic
+# % := 
+# automatic
+# * := src/main
+# automatic
+# + := src/main.cpp
+# automatic
+# | := 
+# automatic
+# < := src/main.cpp
+# automatic
+# ^ := src/main.cpp
+# automatic
+# ? := src/main.cpp
 # variable set hash-table stats:
-# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+# Load=8/32=25%, Rehash=0, Collisions=1/14=7%
 #  commands to execute (from `Makefile', line 27):
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 	
@@ -264,7 +263,7 @@ Makefile:
 
 ircserv: src/main.o src/Server.o src/Message.o src/Client.o src/Channel.o
 #  Implicit rule search has not been done.
-#  Last modified 2023-10-31 20:22:13
+#  File does not exist.
 #  File has been updated.
 #  Needs to be updated (-q is set).
 # variable set hash-table stats:
@@ -282,15 +281,6 @@ fclean:
 	make clean
 	rm -f $(NAME)
 	
-
-# Not a target:
-src/Server.cpp:
-#  Implicit rule search has been done.
-#  Last modified 2023-10-31 20:33:47
-#  File has been updated.
-#  Successfully updated.
-# variable set hash-table stats:
-# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
 
 # Not a target:
 .DEFAULT:
@@ -338,6 +328,7 @@ src/main.cpp:
 #  File has been updated.
 #  Successfully updated.
 # variable set hash-table stats:
+ 
 # Load=0/32=0%, Rehash=0, Collisions=0/0=0%
 
 # Not a target:
@@ -347,7 +338,7 @@ src/Client.o:
 #  File has not been updated.
 
 # files hash-table stats:
-# Load=19/1024=2%, Rehash=0, Collisions=3/53=6%
+# Load=18/1024=2%, Rehash=0, Collisions=2/49=4%
 # VPATH Search Paths
 
 # No `vpath' search paths.
@@ -359,6 +350,6 @@ src/Client.o:
 # strcache size: total = 4096 / max = 4096 / min = 4096 / avg = 4096
 # strcache free: total = 4087 / max = 4087 / min = 4087 / avg = 4087
 
-# Finished Make data base on Tue Oct 31 21:43:46 2023
+# Finished Make data base on Thu Nov  2 19:50:43 2023
 
  
