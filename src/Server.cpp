@@ -263,16 +263,16 @@ void Server::join(Message &message)
     else
     {
         std::cout << "원래 있다 쉐캬\n";
-        //invite만 가능한 방
+        // invite만 가능한 방
         if (iter->second.getMODE_I())
         {
-            //에러 처리 해주기
+            // 에러 처리 해주기
             return;
         }
-        //채널이 비밀번호가 있을 때
-        if (iter->second.getMODE_K())
+        // 채널이 비밀번호가 있을 때
+        if (iter->second.getKey() != "")
         {
-            if (message.getArg()[1] == iter->second.getPassword())
+            if (message.getArg()[1] == iter->second.getKey())
             {
                 iter->second.setMembers(
                     socketFdToClient[message.getSocket()].getNickname(), 0);
@@ -280,7 +280,7 @@ void Server::join(Message &message)
             else // 비밀 번호 틀렷을 때 에러 처리
             {
 
-                return ;
+                return;
             }
         }
         iter->second.setMembers(
@@ -501,7 +501,8 @@ void Server::topic(Message &message)
         // error 442 "<client> <channel> :You're not on that channel"
         return;
     }
-    if (iterNick->second != 1) // 호출한 사람이 채널에 있긴 한데 방장이 아님
+    if (iterCh->second.getMODE_T() && iterNick->second != 1)
+    // 호출한 사람이 채널에 있긴 한데 방장이 아님
     {
         // error 482 "<client> <channel> :You're not channel operator"
         return;
@@ -509,7 +510,7 @@ void Server::topic(Message &message)
 
     // 주제 인자 있는지 확인 -> 없으면 RPL_NOTOPIC (331)
     std::string topic = iterCh->second.getTopic();
-    topic = message.getArg()[1]; //이거 없으면 세그나니까 에러처리 필수
+    topic = message.getArg()[1]; // 이거 없으면 세그나니까 에러처리 필수
     // 관련 메시지 전송
     return;
 }
@@ -558,14 +559,13 @@ void Server::invite(Message &message)
     iterCh->second.setMembers(newMemberName, 0);
     // 관련 메시지 전송
     return;
-/*
-    members[nickname] = 0; // 기본 멤버로 초대
-*/
+    /*
+        members[nickname] = 0; // 기본 멤버로 초대
+    */
 }
 
-// MODE <channel> (<modestring> <mode arguments>)
-// If <modestring> is not given, the RPL_CHANNELMODEIS (324) numeric is returned. 
-void Server::mode(Message &message) // 아직 하는 중
+// MODE <channel> +/-<mode> (<param>)
+void Server::mode(Message &message)
 {
     // 인자 있는지 확인
     if (message.getArg()[0].empty())
@@ -592,13 +592,121 @@ void Server::mode(Message &message) // 아직 하는 중
         // error 442 "<client> <channel> :You're not on that channel"
         return;
     }
-    if (iterNick->second != 1) // 호출한 사람이 채널에 있긴 한데 방장이 아님
+
+    // 모드 설정 인자 없이 들어오면 현재 상태 알려주는 듯 !
+    if (message.getArg()[1].empty())
+    {
+        // message 324  "<client> <channel> <modestring> <mode arguments>..."
+        return;
+    }
+
+    // 모드 설정 인자 있고, 호출한 사람이 채널에 있긴 한데 방장이 아님
+    if (iterNick->second != 1)
     {
         // error 482 "<client> <channel> :You're not channel operator"
         return;
     }
 
+    if (message.getArg()[1][1] == 'o')
+    {
+        if (message.getArg()[2].empty())
+        {
+            // no param
+            return;
+        }
+        std::string targetName = message.getArg()[2];
+        iterNick = members.find(targetName);
+        if (iterNick == members.end()) // 설정할 사람이 채널에 없음
+        {
+            // error
+            return;
+        }
+        else if (message.getArg()[1][0] == '+')
+            members[targetName] = 1;
+        else if (message.getArg()[1][0] == '-')
+            members[targetName] = 0;
+        else
+        {
+            // wrong arg
+            return;
+        }
+    }
 
+    else if (message.getArg()[1][1] == 'k')
+    {
+        if (message.getArg()[2].empty())
+        {
+            // no param
+            return;
+        }
+        std::string oldPassword = iterCh->second.getKey();
+        std::string newPassword = message.getArg()[2];
+        if (message.getArg()[1][0] == '+')
+            oldPassword = newPassword;
+        else if (message.getArg()[1][0] == '-' && oldPassword == newPassword)
+            oldPassword = "";
+        else
+        {
+            // +/- 아니거나, -k인데 패스워드 틀림
+            return;
+        }
+    }
+
+    else if (message.getArg()[1][1] == 'l')
+    {
+        if (message.getArg()[1][0] == '+' && message.getArg()[2].empty())
+        {
+            // no param
+            return;
+        }
+
+        int oldLimit = iterCh->second.getLimit();
+        int newLimit = atoi(message.getArg()[2].c_str());
+        if (message.getArg()[1][0] == '+')
+        {
+            // 현재 채널 멤버보다 limit이 적으면 안되게 설정
+            if (newLimit < members.size())
+            {
+                // fail
+                return;
+            }
+            oldLimit = newLimit;
+        }
+        else if (message.getArg()[1][0] == '-')
+            oldLimit = 0;
+        else
+        {
+            // +/- 아님
+            return;
+        }
+    }
+
+    else if (setMode(message, iterCh->second) == false)
+    {
+        // +/- 아니거나 i/t 아니면 wrong argument
+        return;
+    }
     // 관련 메시지 전송
     return;
+}
+
+bool Server::setMode(Message &message, Channel channel)
+{
+    bool MODE;
+
+    if (message.getArg()[1][1] == 'i')
+        MODE = channel.getMODE_I();
+    else if (message.getArg()[1][1] == 't')
+        MODE = channel.getMODE_T();
+    else
+        return false;
+
+    if (message.getArg()[1][0] == '+')
+        MODE = true;
+    else if (message.getArg()[1][1] == '-')
+        MODE = false;
+    else
+        return false;
+
+    return true;
 }

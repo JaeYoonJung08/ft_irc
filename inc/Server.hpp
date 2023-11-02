@@ -85,6 +85,9 @@ class Server
     void topic(Message &message);
     void invite(Message &message);
     void mode(Message &message);
+
+    /* command utils */
+    bool setMode(Message &message, Channel channel);
 };
 
 #endif
