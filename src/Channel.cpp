@@ -47,7 +47,7 @@ void Channel::printMember()
 
 const bool &Channel::getMODE_I() const { return this->MODE_I; }
 
-const bool &Channel::getMODE_T() const { return this->MODE_I; }
+const bool &Channel::getMODE_T() const { return this->MODE_T; }
 
 // const bool &Channel::getMODE_K() const
 // {
