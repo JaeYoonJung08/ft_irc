@@ -248,133 +248,6 @@ int Server::joinChannelNameCheck(std::string name)
     return true;
 }
 
-void Server::join(Message &message)
-{
-    // 채널 이름이 들어가야함. name
-    if (message.getArg()[0].empty())
-    {
-        std::cout << "fuck error\n";
-        return;
-    }
-    std::cout << "Here\n";
-
-    std::string channel_name = message.getArg()[0];
-    std::map<std::string, Channel>::iterator iter =
-        this->channel.find(channel_name);
-
-    // 채널이 없을 경우 생성
-    if (iter == this->channel.end())
-    {
-        //JOIN 1번 상황 채널 이름은 최대 50자 길이의 문자열('&', '#', '+' 또는 '!' 문자로 시작)입니다.
-        if (joinChannelNameCheck(channel_name) == 0)
-        {
-
-        }
-
-
-        Channel newChannel(channel_name);
-        newChannel.setMembers(
-            socketFdToClient[message.getSocket()].getNickname(), 1);
-        // this->channel[channel_name] = newChannel;
-        channel.insert(make_pair(channel_name, newChannel));
-
-        // 출력해보기
-        //  iter = channel.begin();
-        //  for ( ; iter != channel.end(); iter++)
-        //  {
-        //      std::cout << "channel -> channel_name : " <<
-        //      iter->first<<std::endl; iter->second.printMember();
-        //  }
-    }
-    // 채널이 있을 경우 그냥 들어가기
-    else
-    {
-        std::cout << "원래 있다 쉐캬\n";
-        // invite만 가능한 방
-        if (iter->second.getMODE_I())
-        {
-            // 에러 처리 해주기
-            return;
-        }
-        // 채널이 비밀번호가 있을 때
-        if (iter->second.getKey() != "")
-        {
-            if (message.getArg()[1] == iter->second.getKey())
-            {
-                iter->second.setMembers(
-                    socketFdToClient[message.getSocket()].getNickname(), 0);
-            }
-            else // 비밀 번호 틀렷을 때 에러 처리
-            {
-                return;
-            }
-        }
-        iter->second.setMembers(
-            socketFdToClient[message.getSocket()].getNickname(), 0);
-    }
-}
-
-void Server::part(Message &message) // cout 한 것 전부 send(error)로 바꿔야 !
-{
-    if (message.getArg()[0].empty())
-    {
-        // error 461 "<client> <command> :Not enough parameters"
-        return;
-    }
-
-    std::string channelName = message.getArg()[0];
-    std::map<std::string, Channel>::iterator iterCh =
-        this->channel.find(channelName);
-    if (iterCh == this->channel.end()) // 나갈 채널이 없을 경우
-    {
-        // error 403 "<client> <channel> :No such channel"
-        return;
-    }
-
-    std::string nickname = socketFdToClient[message.getSocket()].getNickname();
-    std::map<std::string, int> members = iterCh->second.getMembers();
-    std::map<std::string, int>::iterator iterNick = members.find(nickname);
-    if (iterNick == members.end()) // 채널은 있는데 그 채널 속 유저가 아님
-    {
-        // error 442 "<client> <channel> :You're not on that channel"
-        return;
-    }
-    else // 채널 있고, 그 채널 속 유저임 -> 채널 나갈거임 ! 만약 방장이라면 ? ..
-    {
-        if (iterNick->second == 1)
-            ; // 방장이라면 : 다른 사람에게 방장 물려주기 / 다른 방장 x시 방
-              // 폭파
-        members.erase(nickname); // members에서 iterNick 빼기 . .
-    }
-    return;
-}
-
-void Server::ping(Message &message)
-{
-    if (message.getArg()[0].empty())
-    {
-        const std::string &error_message = ":irc.local  461 * " +
-                                           message.getCommand() +
-                                           " :Not enough parameters";
-        return;
-    }
-    std::cout << ":irc.local PONG " + message.getArg()[0] << std::endl;
-    // pong 메세지 넣어주어야함.
-    pong(message);
-}
-
-void Server::pong(Message &message)
-{
-    std::vector<std::string> textToBeSent;
-    for (int i = 0; i < message.getArg().size(); i++)
-        textToBeSent.push_back(message.getArg()[i]);
-    std::string prefix =
-        ":" + socketFdToClient[message.getSocket()].getNickname();
-
-    Message toSendMessage(message.getSocket(), prefix, "PONG", textToBeSent);
-    toSendMessage.sendToPong();
-}
-
 
 
 void Server::password_incorrect_464(Message &message)
@@ -407,21 +280,21 @@ void	Server::nick_empty_argument_431(Message &message)
     std::cout << message.getSocket() << error_message << std::endl; 
 }
 
-void Server::kick_no_such_channel_403(Message &message)
+void Server::no_such_channel_403(Message &message)
 {
     std::string error_message = " :irc_local 403 :No such channel";
     //  "<client> <channel> :No such channel"
     std::cout << message.getSocket() << " " << message.getArg()[0] << error_message << std::endl;
 }
 
-void Server::kick_no_member_channel_442(Message &message)
+void Server::no_member_channel_442(Message &message)
 {
     std::string error_message = " :irc_local 442 :You're not on that channel";
     //"<client> <channel> :You're not on that channel"
     std::cout << message.getSocket() << " " << message.getArg()[0] << error_message << std::endl;
 }
 
-void Server::kick_no_operator_channel_482(Message &message)
+void Server::no_operator_channel_482(Message &message)
 {
 
     std::string error_message = " :irc_local 482 :You're not channel operator";
@@ -429,15 +302,37 @@ void Server::kick_no_operator_channel_482(Message &message)
     std::cout << message.getSocket() << " " << message.getArg()[0] << error_message << std::endl;
 }
    
-
-
 void Server::kick_no_users_channel_441(Message &message)
 {
-    std::string error_message = " :irc_local 482 :They aren't on that channel";
+    std::string error_message = " :irc_local 441 :They aren't on that channel";
     // error 441 "<client> <nick> <channel> :They aren't on that channel"
     std::cout << message.getSocket() << " " << message.getArg()[0] << " " << message.getArg()[1] << error_message << std::endl;
 }
-   
+
+void Server::user_already_channel_443(Message &message)
+{
+    std::string error_message = " :irc_local 443 :is already on channel";
+    // error 443 "<client> <nick> <channel> :is already on channel"
+    std::cout << message.getSocket() << " " << message.getArg()[0] << " " << message.getArg()[1] << error_message << std::endl;
+}
+
+
+void Server::state_without_setup_324(Message &message)
+{
+        std::string error_message = " :irc_local 324 ";
+    // error 324 "<client> <channel> <modestring> <mode arguments>..."
+    std::cout << message.getSocket() << " " << message.getArg()[0] << " " << message.getArg()[1] << " " << message.getArg()[2] << " ";
+
+    int i = 3;
+    while (i < message.getArg().size())
+    {
+        std::cout << message.getArg()[i] << " ";
+        i++;
+    }
+    std::cout << error_message << std::endl;
+}
+
+//----------------------------command------------------------------
 
 
 void Server::pass(Message &message)
@@ -513,6 +408,10 @@ void Server::user(Message &message)
 
 void Server::privmsg(Message &message)
 {
+
+    //isunwoo님이 하신 거
+    //이 부분은 여러 사용자들에게 메세지를 보낼 때 인 듯 
+    //즉 첫 번째 자리에 여러 수신자들만 온 것 같음 이 부분이 
     std::vector<std::string> receivers =
         split(message.getArg()[0], ','); // 수신자 여러명 쪼갬
     std::vector<std::string> textToBeSent;
@@ -528,9 +427,149 @@ void Server::privmsg(Message &message)
                               "PRIVMSG", textToBeSent);
         toSendMessage.sendToClient();
     }
+
+    //추가적인 부분해야될 거
+    //1. target 첫 번째 자리에 -> channel, 두 번째 자리에 -> 닉네임, 세 번째 자리 -> text
+
+}
+
+void Server::ping(Message &message)
+{
+    //ERR_NEEDMOREPARAMS (461)
+    if (message.getArg()[0].empty())
+    {        // const std::string &error_message = ":irc.local  461 * " +
+        //                                    message.getCommand() +
+        //                                    " :Not enough parameters";
+        command_empty_argument_461(message);
+        return;
+    }
+
+    std::cout << ":irc.local PONG " + message.getArg()[0] << std::endl;
+    // pong 메세지 넣어주어야함.
+    pong(message);
+    
+    //안해도 될 것 같은 에러 
+    //ERR_NOSUCHSERVER (402)-> 이건 안 해도 될 듯.
+    //ERR_NOORIGIN (409) -> 이건 안 해도 될 듯.
+}
+
+void Server::pong(Message &message)
+{
+    std::vector<std::string> textToBeSent;
+    for (int i = 0; i < message.getArg().size(); i++)
+        textToBeSent.push_back(message.getArg()[i]);
+    std::string prefix =
+        ":" + socketFdToClient[message.getSocket()].getNickname();
+
+    Message toSendMessage(message.getSocket(), prefix, "PONG", textToBeSent);
+    toSendMessage.sendToPong();
 }
 
 
+void Server::join(Message &message)
+{
+    // 채널 이름이 들어가야함. name
+    if (message.getArg()[0].empty())
+    {
+        std::cout << "fuck error\n";
+        return;
+    }
+    std::cout << "Here\n";
+
+    std::string channel_name = message.getArg()[0];
+    std::map<std::string, Channel>::iterator iter =
+        this->channel.find(channel_name);
+
+    // 채널이 없을 경우 생성
+    if (iter == this->channel.end())
+    {
+        //JOIN 1번 상황 채널 이름은 최대 50자 길이의 문자열('&', '#', '+' 또는 '!' 문자로 시작)입니다.
+        if (joinChannelNameCheck(channel_name) == 0)
+        {
+
+        }
+
+
+        Channel newChannel(channel_name);
+        newChannel.setMembers(
+            socketFdToClient[message.getSocket()].getNickname(), 1);
+        // this->channel[channel_name] = newChannel;
+        channel.insert(make_pair(channel_name, newChannel));
+
+        // 출력해보기
+        //  iter = channel.begin();
+        //  for ( ; iter != channel.end(); iter++)
+        //  {
+        //      std::cout << "channel -> channel_name : " <<
+        //      iter->first<<std::endl; iter->second.printMember();
+        //  }
+    }
+    // 채널이 있을 경우 그냥 들어가기
+    else
+    {
+        std::cout << "원래 있다 쉐캬\n";
+        // invite만 가능한 방
+        if (iter->second.getMODE_I())
+        {
+            // 에러 처리 해주기
+            return;
+        }
+        // 채널이 비밀번호가 있을 때
+        if (iter->second.getKey() != "")
+        {
+            if (message.getArg()[1] == iter->second.getKey())
+            {
+                iter->second.setMembers(
+                    socketFdToClient[message.getSocket()].getNickname(), 0);
+            }
+            else // 비밀 번호 틀렷을 때 에러 처리
+            {
+                return;
+            }
+        }
+        iter->second.setMembers(
+            socketFdToClient[message.getSocket()].getNickname(), 0);
+    }
+}
+
+void Server::part(Message &message) // cout 한 것 전부 send(error)로 바꿔야 !
+{
+    if (message.getArg()[0].empty())
+    {
+        // error 461 "<client> <command> :Not enough parameters"
+        //추가 에러 넣어줌
+        command_empty_argument_461(message);
+        return;
+    }
+
+    std::string channelName = message.getArg()[0];
+    std::map<std::string, Channel>::iterator iterCh =
+        this->channel.find(channelName);
+    if (iterCh == this->channel.end()) // 나갈 채널이 없을 경우
+    {
+        // error 403 "<client> <channel> :No such channel"
+        no_such_channel_403(message);
+        return;
+    }
+
+    std::string nickname = socketFdToClient[message.getSocket()].getNickname();
+    std::map<std::string, int> members = iterCh->second.getMembers();
+    std::map<std::string, int>::iterator iterNick = members.find(nickname);
+    if (iterNick == members.end()) // 채널은 있는데 그 채널 속 유저가 아님
+    {
+        // error 442 "<client> <channel> :You're not on that channel"
+        no_member_channel_442(message);
+        return;
+    }
+    else // 채널 있고, 그 채널 속 유저임 -> 채널 나갈거임 ! 만약 방장이라면 ? ..
+    {
+        if (iterNick->second == 1)
+            ; // 방장이라면 : 다른 사람에게 방장 물려주기 / 다른 방장 x시 방
+              // 폭파
+        members.erase(nickname); // members에서 iterNick 빼기 . .
+    }
+    return;
+}
 
 // KICK <channel> <user> (<reason>) 인데 . . 여러명도 가능이라면 ? 자살
 void Server::kick(Message &message)
@@ -552,7 +591,7 @@ void Server::kick(Message &message)
     if (iterCh == this->channel.end())
     {
         // error 403 "<client> <channel> :No such channel"
-        kick_no_such_channel_403(message);
+        no_such_channel_403(message);
         return;
     }
 
@@ -562,13 +601,13 @@ void Server::kick(Message &message)
     if (iterNick == members.end()) // 호출한 사람이 그 채널 속 유저가 아님
     {
         // error 442 "<client> <channel> :You're not on that channel"
-        kick_no_member_channel_442(message);
+        no_member_channel_442(message);
         return;
     }
     if (iterNick->second != 1) // 호출한 사람이 채널에 있긴 한데 방장이 아님
     {
         // error 482 "<client> <channel> :You're not channel operator"
-        kick_no_operator_channel_482(message);
+        no_operator_channel_482(message);
         return;
     }
 
@@ -612,6 +651,7 @@ void Server::topic(Message &message)
     if (message.getArg()[0].empty())
     {
         // error 461 "<client> <command> :Not enough parameters"
+        command_empty_argument_461(message);
         return;
     }
 
@@ -622,6 +662,7 @@ void Server::topic(Message &message)
     if (iterCh == this->channel.end())
     {
         // error 403 "<client> <channel> :No such channel"
+        no_such_channel_403(message);
         return;
     }
 
@@ -631,16 +672,20 @@ void Server::topic(Message &message)
     if (iterNick == members.end()) // 호출한 사람이 그 채널 속 유저가 아님
     {
         // error 442 "<client> <channel> :You're not on that channel"
+        no_member_channel_442(message);
         return;
     }
     if (iterCh->second.getMODE_T() && iterNick->second != 1)
     // 호출한 사람이 채널에 있긴 한데 방장이 아님
     {
         // error 482 "<client> <channel> :You're not channel operator"
+        no_operator_channel_482(message);
         return;
     }
 
     // 주제 인자 있는지 확인 -> 없으면 RPL_NOTOPIC (331)
+
+    //이거 왜 똑같은 변수가 2개지,,? !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     std::string topic = iterCh->second.getTopic();
     topic = message.getArg()[1]; // 이거 없으면 세그나니까 에러처리 필수
     // 관련 메시지 전송
@@ -654,6 +699,7 @@ void Server::invite(Message &message)
     if (message.getArg()[0].empty() || message.getArg()[1].empty())
     {
         // error 461 "<client> <command> :Not enough parameters"
+        command_empty_argument_461(message);
         return;
     }
 
@@ -664,6 +710,7 @@ void Server::invite(Message &message)
     if (iterCh == this->channel.end())
     {
         // error 403 "<client> <channel> :No such channel"
+        no_such_channel_403(message);
         return;
     }
 
@@ -678,6 +725,7 @@ void Server::invite(Message &message)
     if (iterNick->second != 1) // 호출한 사람이 채널에 있긴 한데 방장이 아님
     {
         // error 482 "<client> <channel> :You're not channel operator"
+        no_member_channel_442(message);
         return;
     }
 
@@ -686,6 +734,7 @@ void Server::invite(Message &message)
     if (iterNick != members.end()) // 초대할 사람이 이미 채널에 있음
     {
         // error 443 : "<client> <nick> <channel> :is already on channel"
+        user_already_channel_443(message);
         return;
     }
     iterCh->second.setMembers(newMemberName, 0);
@@ -703,6 +752,7 @@ void Server::mode(Message &message)
     if (message.getArg()[0].empty())
     {
         // error 461 "<client> <command> :Not enough parameters"
+        command_empty_argument_461(message);
         return;
     }
 
@@ -713,6 +763,7 @@ void Server::mode(Message &message)
     if (iterCh == this->channel.end())
     {
         // error 403 "<client> <channel> :No such channel"
+        no_such_channel_403(message);
         return;
     }
 
@@ -722,6 +773,7 @@ void Server::mode(Message &message)
     if (iterNick == members.end()) // 호출한 사람이 그 채널 속 유저가 아님
     {
         // error 442 "<client> <channel> :You're not on that channel"
+        no_member_channel_442(message);
         return;
     }
 
@@ -729,6 +781,7 @@ void Server::mode(Message &message)
     if (message.getArg()[1].empty())
     {
         // message 324  "<client> <channel> <modestring> <mode arguments>..."
+        state_without_setup_324(message);
         return;
     }
 
@@ -736,6 +789,7 @@ void Server::mode(Message &message)
     if (iterNick->second != 1)
     {
         // error 482 "<client> <channel> :You're not channel operator"
+        no_operator_channel_482(message);
         return;
     }
 

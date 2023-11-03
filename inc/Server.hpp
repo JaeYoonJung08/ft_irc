@@ -90,6 +90,7 @@ class Server
     bool setMode(Message &message, Channel channel);
 
     /* error */
+    void state_without_setup_324(Message &message);
     void password_incorrect_464(Message &message);
     void command_empty_argument_461(Message &message);
 
@@ -98,10 +99,12 @@ class Server
     void    nick_empty_argument_431(Message &message);
 
     /* kick 403 */
-    void kick_no_such_channel_403(Message &message);
-    void kick_no_member_channel_442(Message &message);
-    void kick_no_operator_channel_482(Message &message);
+    void no_such_channel_403(Message &message);
+    void no_member_channel_442(Message &message);
+    void user_already_channel_443(Message &message);
+    void no_operator_channel_482(Message &message);
     void kick_no_users_channel_441(Message &message);
+
 };
 
 #endif
