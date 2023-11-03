@@ -204,28 +204,33 @@ void Server::terminateConnection(int fd, struct kevent event)
 
 void Server::execCommand(Message message)
 {
+    Command* command = Command::getInstance(*this);
     if (message.getCommand() == "PASS")
-        pass(message);
-    else if (message.getCommand() == "NICK")
-        nick(message);
-    else if (message.getCommand() == "USER")
-        user(message);
-    else if (message.getCommand() == "PRIVMSG")
-        privmsg(message);
-    else if (message.getCommand() == "PING")
-        ping(message);
-    else if (message.getCommand() == "JOIN")
-        join(message);
-    else if (message.getCommand() == "PART")
-        part(message);
-    else if (message.getCommand() == "KICK")
-        kick(message);
-    else if (message.getCommand() == "TOPIC")
-        topic(message);
-    else if (message.getCommand() == "INVITE")
-        topic(message);
+    {
+        //pass(message);
+        command->pass(message);
+    }
+    // else if (message.getCommand() == "NICK")
+    //     nick(message);
+    // else if (message.getCommand() == "USER")
+    //     user(message);
+    // else if (message.getCommand() == "PRIVMSG")
+    //     privmsg(message);
+    // else if (message.getCommand() == "PING")
+    //     ping(message);
+    // else if (message.getCommand() == "JOIN")
+    //     join(message);
+    // else if (message.getCommand() == "PART")
+    //     part(message);
+    // else if (message.getCommand() == "KICK")
+    //     kick(message);
+    // else if (message.getCommand() == "TOPIC")
+    //     topic(message);
+    // else if (message.getCommand() == "INVITE")
+    //     topic(message);
     // TODO : MODE - operators only
     // TODO : QUIT, EXIT
+
 }
 
 

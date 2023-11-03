@@ -59,7 +59,7 @@ class Server
 
 /////////////////////////////////////////
     // Command 클래스에 Server 인스턴스를 제공하는 메서드 추가
-    Command& getCommandInstance();
+    // Command& getCommandInstance();
     
     // 새로운 함수를 통해 Server 클래스의 멤버 변수에 대한 액세스 제공
     //int getPortNumber() const { return portNumber;}
@@ -67,6 +67,17 @@ class Server
     {
         return nicknameToSocketFd;
     }
+
+    const std::map<std::string, int>& getSocketFdToClient() const 
+    {
+        return socketFdToClient;
+    }
+
+        const std::map<std::string, int>& getChannel() const 
+    {
+        return channel;
+    }
+
 /////////////////////////////////
 
     void openSocket();

@@ -4,6 +4,8 @@
 #include <iostream>
 #include "../inc/Message.hpp"
 #include "../inc/Server.hpp"
+#include "../inc/Channel.hpp"
+#include "../inc/Client.hpp"
 
 class Command
 {
@@ -34,34 +36,39 @@ public:
     //     // 다른 멤버 변수들에 대해 동일한 방식으로 get 함수 사용
     // }
 
-    void accessServerMembers() {
-        // Server 클래스의 nicknameToSocketFd 맵에 접근하여 사용 가능
-        const std::map<std::string, int>& nickToSocket = serverInstance->getNicknameToSocketFd();
-        // 맵 순회 및 작업 수행
-        // for (const auto& pair : nickToSocket) {
-        //     std::cout << "닉네임: " << pair.first << ", 소켓: " << pair.second << std::endl;
-        //     // 닉네임과 해당 소켓에 대한 필요한 작업 수행
-        // }
-    }
+    const std::map<std::string,int> &getServernicknameToSocketFd(void); 
+    const std::map<int, Client> &getServerSocketFdToClient(void);
+    const std::map<std::string, Channel> &getServerChannel(void);
+    // {
+    //     // Server 클래스의 nicknameToSocketFd 맵에 접근하여 사용 가능
+    //     //const std::map<std::string, int>& nickToSocket = serverInstance->getNicknameToSocketFd();
+        
+    //     return serverInstance->getNicknameToSocketFd();
+    //     // 맵 순회 및 작업 수행
+    //     // for (const auto& pair : nickToSocket) {
+    //     //     std::cout << "닉네임: " << pair.first << ", 소켓: " << pair.second << std::endl;
+    //     //     // 닉네임과 해당 소켓에 대한 필요한 작업 수행
+    //     // }
+    // }
 
     /* clients */
     void pass(Message &message);
-    void nick(Message &message);
-    void user(Message &message);
-    void privmsg(Message &message);
-    void ping(Message &message);
-    void pong(Message &message);
-    void join(Message &message);
-    int joinChannelNameCheck(std::string name);
-    void part(Message &message);   // 채널 퇴장
-    void quit(std::string reason); // 서버 접속 끊기
-    void exit(void);               // 서버 접속 끊고 프로그램 종료
+    // void nick(Message &message);
+    // void user(Message &message);
+    // void privmsg(Message &message);
+    // void ping(Message &message);
+    // void pong(Message &message);
+    // void join(Message &message);
+    // int joinChannelNameCheck(std::string name);
+    // void part(Message &message);   // 채널 퇴장
+    // void quit(std::string reason); // 서버 접속 끊기
+    // void exit(void);               // 서버 접속 끊고 프로그램 종료
 
     /* operators */
-    void kick(Message &message);
-    void topic(Message &message);
-    void invite(Message &message);
-    void mode(Message &message);
+    // void kick(Message &message);
+    // void topic(Message &message);
+    // void invite(Message &message);
+    // void mode(Message &message);
 
     /* command utils */
     //bool setMode(Message &message, Channel channel);
@@ -88,7 +95,8 @@ Command* Command::commandInstance = NULL;
 
 Command& Command::getInstance(Server& server) 
 {
-    if (!commandInstance) {
+    if (!commandInstance) 
+    {
         commandInstance = new Command;
         commandInstance->serverInstance = &server;  // 저장된 Server 인스턴스에 접근
     }
