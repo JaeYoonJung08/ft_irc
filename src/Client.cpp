@@ -57,7 +57,24 @@ std::vector<Message> Client::readData()
 
     std::cout << RED << inBuffer << NC << std::endl;
 
-    std::vector<std::string> messages = split(buffer, '\n');
+    ret = this->extractMessageFromBuffer();
+
+    return ret;
+}
+std::vector<Message> Client::extractMessageFromBuffer()
+{
+    std::vector<std::string> messages;
+
+    std::string::size_type pos = inBuffer.find("\r\n");
+    while (pos != std::string::npos)
+    {
+        messages.push_back(inBuffer.substr(0, pos));
+        inBuffer.erase(0, pos + 2);
+        pos = inBuffer.find("\r\n");
+    }
+
+    std::vector<Message> ret;
+
     for (int i = 0; i < messages.size(); i++)
         ret.push_back(Message(this->socket, messages[i]));
 
