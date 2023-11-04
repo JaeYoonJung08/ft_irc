@@ -88,7 +88,8 @@ void Server::run()
             throw std::runtime_error("kevent event error");
         for (int i = 0; i < triggered; i++)
         {
-            if ((int) events[i].ident == this->serverSocket) // 소켓에서 이벤트 발생
+            if ((int)events[i].ident ==
+                this->serverSocket) // 소켓에서 이벤트 발생
             {
                 handleNewConnection(events[i].ident);
             }
@@ -107,12 +108,12 @@ void Server::run()
                     // 경우을 나누어야함. 함수 수정해주자
                     handleExistingConnection(events[i].ident, events[i]);
                 }
-                 else if (events[i].filter == EVFILT_WRITE)
-                 {
-                     //새롭게 추가 된 거
-                     //서버가 클라리언트로 패킷을 보낼 경우
-                     handleExistingConnection_send_client(events[i].ident);
-                 }
+                else if (events[i].filter == EVFILT_WRITE)
+                {
+                    // 새롭게 추가 된 거
+                    // 서버가 클라리언트로 패킷을 보낼 경우
+                    handleExistingConnection_send_client(events[i].ident);
+                }
             }
         }
     }
@@ -124,8 +125,8 @@ void Server::handleNewConnection(int sockFd)
     struct kevent event;
     int client_addr_size = sizeof(client_addr);
 
-    int newFd = accept(sockFd, (sockaddr *) &client_addr,
-                       (socklen_t *) &client_addr_size);
+    int newFd = accept(sockFd, (sockaddr *)&client_addr,
+                       (socklen_t *)&client_addr_size);
     if (newFd == -1)
         throw std::runtime_error("accept error");
     fcntl(newFd, F_SETFL, O_NONBLOCK); // non-block 설정
@@ -190,7 +191,7 @@ void Server::terminateConnection(int fd, struct kevent event)
 
 void Server::execCommand(Message message)
 {
-
+    std::cout << "here\n";
     Command &command = Command::getInstance(*this);
     if (message.getCommand() == "PASS")
         command.pass(message);
@@ -215,10 +216,12 @@ void Server::execCommand(Message message)
     // TODO : MODE - operators only
     // TODO : QUIT, EXIT
 }
+
 int Server::getKque() const
 {
     return kque;
 }
+
 Client &Server::getClientByNickname(const std::string &nickname)
 {
     std::map<std::string, int>::iterator iter = nicknameToSocketFd.find(nickname);

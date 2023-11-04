@@ -20,27 +20,27 @@ void Command::command_empty_argument_461(Message &message)
               << error_message << std::endl;
 }
 
- std::map<std::string, int> &Command::getServernicknameToSocketFd(void)
+std::map<std::string, int> &Command::getServernicknameToSocketFd(void)
 {
     return serverInstance->getNicknameToSocketFd();
 }
 
- std::map<int, Client> &Command::getServerSocketFdToClient(void)
+std::map<int, Client> &Command::getServerSocketFdToClient(void)
 {
     return serverInstance->getSocketFdToClient();
 }
 
- std::map<std::string, Channel> &Command::getServerChannel(void)
+std::map<std::string, Channel> &Command::getServerChannel(void)
 {
     return serverInstance->getChannel();
 }
 
- std::string &Command::getServerPassWord(void)
+std::string &Command::getServerPassWord(void)
 {
     return serverInstance->getPassWord();
 }
 
-void Command::nick_duplicate_check_433(Message &message)
+void Command::duplicate_check_433(Message &message)
 {
     std::string error_message = " :irc_local 433 :Nickname is already in use";
     //"<client> <nick> :Nickname is already in use"
@@ -56,7 +56,7 @@ void Command::nick_duplicate_check_433(Message &message)
               << std::endl;
 }
 
-void Command::nick_empty_argument_431(Message &message)
+void Command::empty_argument_431(Message &message)
 {
     std::string error_message = " :irc_local 431 :No nickname given";
     //"<client> :No nickname given"
@@ -88,7 +88,7 @@ void Command::no_operator_channel_482(Message &message)
               << error_message << std::endl;
 }
 
-void Command::kick_no_users_channel_441(Message &message)
+void Command::no_users_channel_441(Message &message)
 {
     std::string error_message = " :irc_local 441 :They aren't on that channel";
     // error 441 "<client> <nick> <channel> :They aren't on that channel"
@@ -120,26 +120,18 @@ void Command::state_without_setup_324(Message &message)
     std::cout << error_message << std::endl;
 }
 
-//----------------------------command------------------------------
+//----------------------------command------------------------------//
 
 void Command::pass(Message &message)
 {
-    // 전달된 파라미터가 없을 때
-    if (message.getArg()[0].empty())
-    {
-        command_empty_argument_461(message);
-        return;
-    }
-
-    // 비밀번호가 틀렸을 경우 ERR_PASSWDMISMATCH (464)
+    std::cout << "here\n";
+    // 비밀번호가 틀렸을 경우 ERR_PASSWDMISMATCH (464), 461을 464로 대체
     std::string password = getServerPassWord();
-    if (password != message.getArg()[0])
+    if (password != message.getArg()[0] || message.getArg()[0].empty())
     {
         password_incorrect_464(message);
-        return;
+        std::exit(1);
     }
-
-    // ERR_ALREADYREGISTERED (462) -> 이거는 잘 모르겠음 안해도 될 것 같은데,,
 }
 
 void Command::nick(Message &message)
@@ -147,10 +139,10 @@ void Command::nick(Message &message)
     int socket = message.getSocket();
     std::string newNickname = message.getArg()[0];
 
-    // Nickname이 empty일 때
+    // Nickname이 empty일 때 431
     if (newNickname.empty())
     {
-        nick_empty_argument_431(message);
+        empty_argument_431(message);
         return;
     }
 
@@ -159,7 +151,8 @@ void Command::nick(Message &message)
     std::map<int, Client>::iterator iter = socketFdToClient.find(socket);
 
     // 추가
-    std::map<std::string, int> &nicknameToSocketFd = getServernicknameToSocketFd();
+    std::map<std::string, int> &nicknameToSocketFd =
+        getServernicknameToSocketFd();
     std::map<std::string, int>::iterator iterNicknameToSocket =
         nicknameToSocketFd.find(newNickname);
 
@@ -179,11 +172,11 @@ void Command::nick(Message &message)
         std::cout << newNickname << " : nick 중복" << std::endl;
         // TODO : Nickname 중복 에러 전송
         // ERR_NICKNAMEINUSE (433)
-        nick_duplicate_check_433(message);
+        duplicate_check_433(message);
         return;
     }
-    //    * ERR_NICKCOLLISION (436) -> 다른 서버 중복 닉네임인 것 같은데 할 필요
-    //    x 생각됨.
+    //   ERR_NICKCOLLISION (436)
+
     //    * ERR_ERRONEUSNICKNAME (432) -> 이 부분들도 해야될 필요가 있을끼..?
     //    이거는 서버마다 다르다고 말함
 }
@@ -199,7 +192,6 @@ void Command::user(Message &message)
     }
     std::map<int, Client> &socketFdToClient = getServerSocketFdToClient();
     socketFdToClient[message.getSocket()].setUsername(message.getArg()[0]);
-    //    * ERR_ALREADYREGISTERED (462) -> 이거 할 필요가 없을 듯
 }
 
 void Command::privmsg(Message &message)
@@ -216,7 +208,8 @@ void Command::privmsg(Message &message)
         textToBeSent.push_back(message.getArg()[i]);
 
     std::map<int, Client> &socketFdToClient = getServerSocketFdToClient();
-    std::map<std::string, int> &nicknameToSocketFd = getServernicknameToSocketFd();
+    std::map<std::string, int> &nicknameToSocketFd =
+        getServernicknameToSocketFd();
 
     std::string fromNickname = socketFdToClient[message.getSocket()].getNickname();
     std::string prefix = ":" + fromNickname; // 출처 추가
@@ -256,10 +249,6 @@ void Command::ping(Message &message)
     std::cout << ":irc.local PONG " + message.getArg()[0] << std::endl;
     // pong 메세지 넣어주어야함.
     pong(message);
-
-    // 안해도 될 것 같은 에러
-    // ERR_NOSUCHSERVER (402)-> 이건 안 해도 될 듯.
-    // ERR_NOORIGIN (409) -> 이건 안 해도 될 듯.
 }
 
 void Command::pong(Message &message)
@@ -450,7 +439,7 @@ void Command::kick(Message &message)
     if (iterNick == members.end()) // kick할 사람이 그 채널 속 유저가 아님
     {
         // error 441 "<client> <nick> <channel> :They aren't on that channel"
-        kick_no_users_channel_441(message);
+        no_users_channel_441(message);
         return;
     }
 
@@ -473,9 +462,6 @@ void Command::kick(Message &message)
         }
         return;
     */
-
-    // jaeyojun
-    // ERR_BADCHANMASK (476) -> 이거 안함
 }
 
 // TOPIC <channel> (<topic>)
@@ -581,6 +567,8 @@ void Command::invite(Message &message)
     /*
         members[nickname] = 0; // 기본 멤버로 초대
     */
+
+    // 341 하면 좋을 듯
 }
 
 // MODE <channel> +/-<mode> (<param>)
