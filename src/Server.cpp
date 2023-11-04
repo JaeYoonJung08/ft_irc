@@ -214,3 +214,7 @@ void Server::execCommand(Message message)
     // TODO : MODE - operators only
     // TODO : QUIT, EXIT
 }
+int Server::getKque() const
+{
+    return kque;
+}

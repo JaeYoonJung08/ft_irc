@@ -1,6 +1,9 @@
 #include <iostream>
 #include "../inc/Server.hpp"
+#include "../inc/Command.hpp"
 using namespace std;
+
+// Command * Command::commandInstance = NULL;
 
 int main(int argc, char* argv[])
 {
@@ -10,4 +13,5 @@ int main(int argc, char* argv[])
 	server.init();
 
 	server.run();
+
 }

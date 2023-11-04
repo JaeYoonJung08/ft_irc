@@ -63,7 +63,6 @@ class Server
 
     int getKque() const;
 
-
     std::map<std::string, int>& getNicknameToSocketFd()
     {
         return nicknameToSocketFd;
