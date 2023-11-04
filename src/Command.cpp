@@ -211,23 +211,30 @@ void Command::privmsg(Message &message)
     std::vector<std::string> receivers =
         split(message.getArg()[0], ','); // 수신자 여러명 쪼갬
     std::vector<std::string> textToBeSent;
-    for (int i = 1; i < message.getArg().size();
+    for (int i = 0; i < message.getArg().size();
          i++) // arg에서 수신자 닉네임 뒤 부터 다 집어넣음
         textToBeSent.push_back(message.getArg()[i]);
 
     std::map<int, Client> &socketFdToClient = getServerSocketFdToClient();
     std::map<std::string, int> &nicknameToSocketFd = getServernicknameToSocketFd();
 
-    std::string prefix =
-        ":" + socketFdToClient[message.getSocket()].getNickname(); // 출처 추가
+    std::string fromNickname = socketFdToClient[message.getSocket()].getNickname();
+    std::string prefix = ":" + fromNickname; // 출처 추가
 
     for (int i = 0; i < receivers.size(); i++)
     {
-        int socketToSend = nicknameToSocketFd[receivers[i]];
-        Client &clientToSend = socketFdToClient[socketToSend];
-        Message messageToBeSent =  Message(nicknameToSocketFd[receivers[i]], prefix, "PRIVMSG", textToBeSent);
+        if (receivers[i][0] == '#') // channel로 통신
+        {
+            serverInstance->getChannel()[receivers[i]].broadcasting(fromNickname, message);
+        }
+        else
+        {
+            int socketToSend = nicknameToSocketFd[receivers[i]];
+            Client &clientToSend = socketFdToClient[socketToSend];
+            Message messageToBeSent =  Message(nicknameToSocketFd[receivers[i]], prefix, "PRIVMSG", textToBeSent);
 
-        clientToSend.sendMessage(messageToBeSent);
+            clientToSend.sendMessage(messageToBeSent);
+        }
     }
 
     // 추가적인 부분해야될 거
@@ -299,7 +306,7 @@ void Command::join(Message &message)
     }
     std::cout << "Here\n";
 
-    std::map<std::string, Channel> channel = getServerChannel();
+    std::map<std::string, Channel> &channel = getServerChannel();
     std::map<int, Client> &socketFdToClient = getServerSocketFdToClient();
 
     std::string channel_name = message.getArg()[0];
