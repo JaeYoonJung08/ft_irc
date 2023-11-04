@@ -1,6 +1,7 @@
 #include "../inc/Server.hpp"
 
-Server::Server() {}
+Server::Server()
+{}
 
 bool Server::password_checker(const std::string &str)
 {
@@ -154,7 +155,7 @@ void Server::handleExistingConnection(int sockFd, struct kevent event)
 {
     if (isConnected(sockFd, event) == false)
     {
-        this->terminateConnection(sockFd, event);
+        this->terminateConnection(sockFd);
         return;
     }
 
@@ -162,7 +163,17 @@ void Server::handleExistingConnection(int sockFd, struct kevent event)
 
     std::vector<Message> messages = this->socketFdToClient[sockFd].readData();
     for (int i = 0; i < messages.size(); i++)
-        execCommand(messages[i]);
+    {
+        try
+        {
+            execCommand(messages[i]);
+        }
+        catch (std::exception &e)
+        {
+            std::cout << e.what() << std::endl;
+            break;
+        }
+    }
 }
 
 bool Server::isConnected(int fd, struct kevent event)
@@ -174,7 +185,7 @@ bool Server::isConnected(int fd, struct kevent event)
     return true;
 }
 
-void Server::terminateConnection(int fd, struct kevent event)
+void Server::terminateConnection(int fd)
 {
     // socket, kqueue 관련 연결 끊음
     struct kevent temp_event;

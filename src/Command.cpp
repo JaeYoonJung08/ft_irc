@@ -151,7 +151,8 @@ void Command::pass(Message &message)
     if (password != message.getArg()[0] || message.getArg()[0].empty())
     {
         password_incorrect_464(message);
-        close(message.getSocket());
+        serverInstance->terminateConnection(message.getSocket());
+        throw std::runtime_error("pass error");
     }
 }
 
@@ -219,7 +220,12 @@ void Command::user(Message &message)
         return;
     }
     std::map<int, Client> &socketFdToClient = getServerSocketFdToClient();
-    socketFdToClient[message.getSocket()].setUsername(message.getArg()[0]);
+
+    Client &client = socketFdToClient[message.getSocket()];
+    client.setUsername(message.getArg()[0]);
+
+    Message messageToSend(client.getSocket(), ":irc.local 001 " + client.getNickname() + " :Welcome to the Internet Relay Network");
+    client.sendMessage(messageToSend);
 }
 
 void Command::privmsg(Message &message)

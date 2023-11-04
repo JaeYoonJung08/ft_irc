@@ -37,6 +37,7 @@ const std::string &Client::getNickname() const
 
 #define RED "\e[0;31m"
 #define NC "\e[0m"
+#define YELLOW "\033[0;33m"
 
 std::vector<Message> Client::readData()
 {
@@ -140,6 +141,7 @@ void Client::sendData()
     }
     else // 다 보냈을 때
     {
+        std::cout << YELLOW << outBuffer << NC << std::endl;
         this->outBuffer.clear();
         writeOff();
     }
@@ -147,5 +149,9 @@ void Client::sendData()
 void Client::setServerPtr(Server *server_ptr)
 {
     serverPtr = server_ptr;
+}
+int Client::getSocket() const
+{
+    return socket;
 }
 
