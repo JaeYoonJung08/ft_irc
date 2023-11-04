@@ -27,13 +27,13 @@ class Message
             const std::vector<std::string> &argument);
     ~Message();
 
-    std::string getPrefix();
-    std::string getCommand();
-    std::vector<std::string> getArg();
+    const std::string &getPrefix() const;
+    const std::string &getCommand() const;
+    const std::vector<std::string> &getArg() const;
+
     int getSocket();
 
     void parse(std::string msg);
-    void sendToClient();
     void sendToPong();
 };
 

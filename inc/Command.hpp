@@ -8,6 +8,7 @@
 #include "../inc/Client.hpp"
 
 class Server;
+class Client;
 
 class Command
 {

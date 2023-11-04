@@ -28,17 +28,17 @@ std::string& rtrim(std::string& s, const char* t = " \t\n\r\f\v")
     return s;
 }
 
-std::string Message::getPrefix()
+const std::string &Message::getPrefix() const
 {
 	return (this->prefix);
 }
 
-std::string Message::getCommand()
+const std::string &Message::getCommand() const
 {
 	return (this->command);
 }
 
-std::vector<std::string> Message::getArg()
+const std::vector<std::string> &Message::getArg() const
 {
 	return (this->argument);
 }
@@ -78,21 +78,6 @@ Message::Message(int socket,
                  const std::vector<std::string> &argument)
         : socket(socket), prefix(prefix), command(command), argument(argument)
 {}
-
-void Message::sendToClient()
-{
-    std::string toSend = "";
-
-    toSend += prefix;
-    toSend += " ";
-    toSend += command;
-    for (int i = 0; i < argument.size(); i++)
-    {
-        toSend += " " + argument[i];
-    }
-    toSend += "\r\n";
-    send(socket, toSend.c_str(), toSend.size(), MSG_DONTWAIT); // non-block으로 전송
-}
 
 void Message::sendToPong()
 {

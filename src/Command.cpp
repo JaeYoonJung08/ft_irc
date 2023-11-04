@@ -147,7 +147,6 @@ void Command::nick(Message &message)
     int socket = message.getSocket();
     std::string newNickname = message.getArg()[0];
 
-    std::cout << "HERE : \n";
     // Nickname이 empty일 때
     if (newNickname.empty())
     {
@@ -224,9 +223,11 @@ void Command::privmsg(Message &message)
 
     for (int i = 0; i < receivers.size(); i++)
     {
-        Message toSendMessage(nicknameToSocketFd[receivers[i]], prefix,
-                              "PRIVMSG", textToBeSent);
-        toSendMessage.sendToClient();
+        int socketToSend = nicknameToSocketFd[receivers[i]];
+        Client &clientToSend = socketFdToClient[socketToSend];
+        Message messageToBeSent =  Message(nicknameToSocketFd[receivers[i]], prefix, "PRIVMSG", textToBeSent);
+
+        clientToSend.sendMessage(messageToBeSent);
     }
 
     // 추가적인 부분해야될 거
