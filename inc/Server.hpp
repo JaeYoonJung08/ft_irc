@@ -60,21 +60,21 @@ class Server
     ~Server();
 
 
-    const std::map<std::string, int>& getNicknameToSocketFd() 
+    std::map<std::string, int>& getNicknameToSocketFd() 
     {
         return nicknameToSocketFd;
     }
 
-    const std::map<int, Client>& getSocketFdToClient() 
+    std::map<int, Client>& getSocketFdToClient() 
     {
         return socketFdToClient;
     }
 
-    const std::map<std::string, Channel>& getChannel()
+    std::map<std::string, Channel>& getChannel()
     {
         return channel;
     }
-    const std::string& getPassWord()
+    std::string& getPassWord()
     {
         return password;
     }
