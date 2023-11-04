@@ -101,7 +101,7 @@ void Client::sendMessage(std::string &string)
 {
     std::string toSend = string;
 
-    string += "\r\n";
+    toSend += "\r\n";
 
     this->outBuffer += toSend;
 

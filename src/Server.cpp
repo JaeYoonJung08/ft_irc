@@ -159,7 +159,7 @@ void Server::handleExistingConnection(int sockFd, struct kevent event)
         return;
     }
 
-    std::cout << "--------" << sockFd << "--------" << std::endl;
+    std::cout << "--------" << sockFd << ": "  << socketFdToClient[sockFd].getNickname() << "--------" << std::endl;
 
     std::vector<Message> messages = this->socketFdToClient[sockFd].readData();
     for (int i = 0; i < messages.size(); i++)
