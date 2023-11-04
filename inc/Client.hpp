@@ -31,6 +31,7 @@ class Client
     void setUsername(std::string username);
     void setNickname(std::string nickname);
     const std::string &getNickname() const;
+    int getSocket() const;
 
     std::vector<Message> readData();
     std::vector<Message> extractMessageFromBuffer();

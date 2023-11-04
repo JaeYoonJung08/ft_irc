@@ -7,11 +7,14 @@ void Command::password_incorrect_464(Message &message)
     // std::string nick_msg = ":irc_local 464 User :Password Incorrect, Command
     // disconnected";
     //"<clint> :Password incorrect"
-    std::string error_message =
-        " :irc_local 464 :Password Incorrect, Command disconnected";
-    std::cout << message.getSocket() << error_message << std::endl;
-}
 
+    Client &client = serverInstance->getSocketFdToClient()[message.getSocket()];
+    std::string nickname = client.getNickname();
+    std::string error_message = ":irc_local 464 " + nickname + " :Password Incorrect, Command disconnected";
+
+    client.sendMessage(error_message);
+}
+환
 void Command::command_empty_argument_461(Message &message)
 {
     std::string error_message = " :irc_local 461 :Not enough parameters";
@@ -42,18 +45,8 @@ std::string &Command::getServerPassWord(void)
 
 void Command::duplicate_check_433(Message &message)
 {
-    std::string error_message = " :irc_local 433 :Nickname is already in use";
-    //"<client> <nick> :Nickname is already in use"
-
-    // before
-    // std::cout << message.getSocket()<< " " <<
-    // this->nicknameToSocketFd[message.getArg()[0]] << error_message <<
-    // std::endl; after
-    std::map<std::string, int> nicknameToSocketFd =
-        getServernicknameToSocketFd();
-    std::cout << message.getSocket() << " "
-              << nicknameToSocketFd[message.getArg()[0]] << error_message
-              << std::endl;
+    std::string error_message = ":irc_local 433 " + message.getArg()[0] + " " + message.getArg()[0] + " :Nickname is already in use";
+    serverInstance->getSocketFdToClient()[message.getSocket()].sendMessage(error_message);
 }
 
 void Command::empty_argument_431(Message &message)
@@ -186,7 +179,8 @@ void Command::pass(Message &message)
     if (password != message.getArg()[0] || message.getArg()[0].empty())
     {
         password_incorrect_464(message);
-        close(message.getSocket());
+        serverInstance->terminateConnection(message.getSocket());
+        throw std::runtime_error("pass error");
     }
 }
 
@@ -242,6 +236,11 @@ void Command::nick(Message &message)
             characters_not_allowed_432(message);
         i++;
     }
+
+    Client &client = socketFdToClient[message.getSocket()];
+
+    Message messageToSend(client.getSocket(), ":irc.local 001 " + client.getNickname() + " :Welcome to the Internet Relay Network");
+    client.sendMessage(messageToSend);
 }
 
 void Command::user(Message &message)
@@ -254,7 +253,9 @@ void Command::user(Message &message)
         return;
     }
     std::map<int, Client> &socketFdToClient = getServerSocketFdToClient();
-    socketFdToClient[message.getSocket()].setUsername(message.getArg()[0]);
+
+    Client &client = socketFdToClient[message.getSocket()];
+    client.setUsername(message.getArg()[0]);
 }
 
 void Command::privmsg(Message &message)
@@ -372,8 +373,6 @@ void Command::ping(Message &message)
         return;
     }
 
-    std::cout << ":irc.local PONG " + message.getArg()[0] << std::endl;
-    // pong 메세지 넣어주어야함.
     pong(message);
 }
 
@@ -384,11 +383,11 @@ void Command::pong(Message &message)
         textToBeSent.push_back(message.getArg()[i]);
 
     std::map<int, Client> &socketFdToClient = getServerSocketFdToClient();
-    std::string prefix =
-        ":" + socketFdToClient[message.getSocket()].getNickname();
+    std::string prefix = ":irc.local";
 
     Message toSendMessage(message.getSocket(), prefix, "PONG", textToBeSent);
-    toSendMessage.sendToPong();
+
+    socketFdToClient[message.getSocket()].sendMessage(toSendMessage);
 }
 
 int Command::joinChannelNameCheck(std::string name)
@@ -865,5 +864,5 @@ bool Command::setMode(Message &message, Channel channel)
 
 void Command::quit(Message &message)
 {
-    close(message.getSocket());
+    serverInstance->terminateConnection(message.getSocket());
 } 

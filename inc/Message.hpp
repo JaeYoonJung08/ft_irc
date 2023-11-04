@@ -35,7 +35,6 @@ class Message
     int getSocket();
 
     void parse(std::string msg);
-    void sendToPong();
 };
 
 std::vector<std::string> split(std::string input, char delimiter);
