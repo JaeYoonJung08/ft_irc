@@ -204,11 +204,11 @@ void Server::terminateConnection(int fd, struct kevent event)
 
 void Server::execCommand(Message message)
 {
-    Command* command = Command::getInstance(*this);
+    Command& command = Command::getInstance(*this);
     if (message.getCommand() == "PASS")
     {
         //pass(message);
-        command->pass(message);
+        command.pass(message);
     }
     // else if (message.getCommand() == "NICK")
     //     nick(message);
@@ -234,26 +234,26 @@ void Server::execCommand(Message message)
 }
 
 
-int Server::joinChannelNameCheck(std::string name)
-{
+// int Server::joinChannelNameCheck(std::string name)
+// {
 
-    //1번인 & # + !이 오는지 검사, 길이가 50이하 인지 검사
-    if (!(name[0] == '&' || name[0] == '#' || name[0] == '+' || name[0] == '!' || name.size() <= 50))
-        return false;
+//     //1번인 & # + !이 오는지 검사, 길이가 50이하 인지 검사
+//     if (!(name[0] == '&' || name[0] == '#' || name[0] == '+' || name[0] == '!' || name.size() <= 50))
+//         return false;
     
-    //2번 공백 검사, 컨트롤 G 검사, 쉼표 검사 이 3가지가 오면 안 됨
-    int index = 0; 
-    while (name[index])
-    {
-        if (isspace(name[index] != 0) || name[index] == 7 || name[index] == ',')
-            return false;
-        index++;
-    }
+//     //2번 공백 검사, 컨트롤 G 검사, 쉼표 검사 이 3가지가 오면 안 됨
+//     int index = 0; 
+//     while (name[index])
+//     {
+//         if (isspace(name[index] != 0) || name[index] == 7 || name[index] == ',')
+//             return false;
+//         index++;
+//     }
 
-    return true;
-}
+//     return true;
+// }
 
-Command& Server::getCommandInstance() 
-{
-    return Command::getInstance(*this); // Command 클래스 생성 시 Server 클래스 인스턴스 전달
-}
+// Command& Server::getCommandInstance() 
+// {
+//     return Command::getInstance(*this); // Command 클래스 생성 시 Server 클래스 인스턴스 전달
+// }

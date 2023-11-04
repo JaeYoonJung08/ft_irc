@@ -20,6 +20,8 @@
 #include "../inc/Message.hpp"
 #include "../inc/Command.hpp"
 
+
+
 #define LISTEN_BACKLOG_NUM 5 // listen 에서 대기 큐 갯수.
 
 enum Cmd
@@ -57,28 +59,25 @@ class Server
     Server(int portNumber, std::string password);
     ~Server();
 
-/////////////////////////////////////////
-    // Command 클래스에 Server 인스턴스를 제공하는 메서드 추가
-    // Command& getCommandInstance();
-    
-    // 새로운 함수를 통해 Server 클래스의 멤버 변수에 대한 액세스 제공
-    //int getPortNumber() const { return portNumber;}
-    const std::map<std::string, int>& getNicknameToSocketFd() const 
+
+    const std::map<std::string, int>& getNicknameToSocketFd() 
     {
         return nicknameToSocketFd;
     }
 
-    const std::map<std::string, int>& getSocketFdToClient() const 
+    const std::map<int, Client>& getSocketFdToClient() 
     {
         return socketFdToClient;
     }
 
-        const std::map<std::string, int>& getChannel() const 
+    const std::map<std::string, Channel>& getChannel()
     {
         return channel;
     }
-
-/////////////////////////////////
+    const std::string& getPassWord()
+    {
+        return password;
+    }
 
     void openSocket();
     void init();
@@ -94,10 +93,5 @@ class Server
 
 
 };
-/////////////////////
-// Command& Server::getCommandInstance()
-//  {
-//     return Command::getInstance(*this); // Command 클래스 생성 시 Server 클래스 인스턴스 전달
-// }
-///////////////////////
+
 #endif
