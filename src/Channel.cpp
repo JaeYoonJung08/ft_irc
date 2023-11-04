@@ -57,10 +57,12 @@ void Channel::broadcasting(std::string &fromNickname, Message &message)
     while (iter != members.end())
     {
         Client &clientToSend = this->serverPtr->getClientByNickname(iter->first);
-
-        Message messageToSend = message;
-        messageToSend.setPrefix(":" + fromNickname);
-        clientToSend.sendMessage(messageToSend);
+        if (fromNickname != iter->first)
+        {
+            Message messageToSend = message;
+            messageToSend.setPrefix(":" + fromNickname);
+            clientToSend.sendMessage(messageToSend);
+        }
         iter++;
     }
 }
