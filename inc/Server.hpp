@@ -18,6 +18,9 @@
 #include "../inc/Channel.hpp"
 #include "../inc/Client.hpp"
 #include "../inc/Message.hpp"
+#include "../inc/Command.hpp"
+
+
 
 #define LISTEN_BACKLOG_NUM 5 // listen 에서 대기 큐 갯수.
 
@@ -60,6 +63,26 @@ class Server
 
     int getKque() const;
 
+
+    std::map<std::string, int>& getNicknameToSocketFd()
+    {
+        return nicknameToSocketFd;
+    }
+
+    std::map<int, Client>& getSocketFdToClient()
+    {
+        return socketFdToClient;
+    }
+
+    std::map<std::string, Channel>& getChannel()
+    {
+        return channel;
+    }
+    std::string& getPassWord()
+    {
+        return password;
+    }
+
     void openSocket();
     void init();
     void run();
@@ -71,43 +94,7 @@ class Server
     void execCommand(Message message);
     bool password_checker(const std::string &str);
 
-    /* clients */
-    void pass(Message &message);
-    void nick(Message &message);
-    void user(Message &message);
-    void privmsg(Message &message);
-    void ping(Message &message);
-    void pong(Message &message);
-    void join(Message &message);
-    int joinChannelNameCheck(std::string name);
-    void part(Message &message);   // 채널 퇴장
-    void quit(std::string reason); // 서버 접속 끊기
-    void exit(void);               // 서버 접속 끊고 프로그램 종료
 
-    /* operators */
-    void kick(Message &message);
-    void topic(Message &message);
-    void invite(Message &message);
-    void mode(Message &message);
-
-    /* command utils */
-    bool setMode(Message &message, Channel channel);
-
-    /* error */
-    void state_without_setup_324(Message &message);
-    void password_incorrect_464(Message &message);
-    void command_empty_argument_461(Message &message);
-
-    /* nick 433, 431 */
-    void	nick_duplicate_check_433(Message &message);
-    void    nick_empty_argument_431(Message &message);
-
-    /* kick 403 */
-    void no_such_channel_403(Message &message);
-    void no_member_channel_442(Message &message);
-    void user_already_channel_443(Message &message);
-    void no_operator_channel_482(Message &message);
-    void kick_no_users_channel_441(Message &message);
 
 };
 
