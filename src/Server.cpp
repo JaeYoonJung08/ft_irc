@@ -30,6 +30,8 @@ Server::Server(int portNumber, std::string password)
     this->kque = kqueue(); // kque 생성
     if (this->kque == -1)
         throw std::runtime_error("kqueue error");
+
+    Client::serverPtr = this;
 }
 
 void Server::openSocket()
@@ -91,7 +93,6 @@ void Server::run()
             }
             else
             { // 기존 접속
-                std::cout << "기존 접속!" << std::endl;
                 // naki님이 말씀하신 서버에서 클라이언트로 우째 보내노 라는
                 // 질문을 여기서 해결할 것임 kevent 구조체 안에는 filter라는 게
                 // 있음 이 친구들을 통해 서버에서 소켓을 받는지, 클라이언트한테
@@ -105,13 +106,12 @@ void Server::run()
                     // 경우을 나누어야함. 함수 수정해주자
                     handleExistingConnection(events[i].ident, events[i]);
                 }
-                // else if (events[i].filter == EVFILT_WRITE)
-                // {
-                //     //새롭게 추가 된 거
-                //     //서버가 클라리언트로 패킷을 보낼 경우
-                //     handleExistingConnection_send_client(events[i].ident,
-                //     events[i]);
-                // }
+                 else if (events[i].filter == EVFILT_WRITE)
+                 {
+                     //새롭게 추가 된 거
+                     //서버가 클라리언트로 패킷을 보낼 경우
+                     handleExistingConnection_send_client(events[i].ident);
+                 }
             }
         }
     }
@@ -131,23 +131,18 @@ void Server::handleNewConnection(int sockFd)
     EV_SET(&event, newFd, EVFILT_READ, EV_ADD, NULL, 0, NULL);
     kevent(this->kque, &event, 1, NULL, 0, NULL);
 
+    EV_SET(&event, newFd, EVFILT_WRITE, EV_ADD | EV_DISABLE, NULL, 0, NULL);
+    kevent(this->kque, &event, 1, NULL, 0, NULL);
+
     Client client(newFd);
     socketFdToClient.insert(std::make_pair(newFd, client));
 
     std::cout << newFd << " : new connect!" << std::endl;
 }
 /* 서버가 클라이언트한테 소켓을 보낼 때*/
-void Server::handleExistingConnection_send_client(int fd, struct kevent event)
+void Server::handleExistingConnection_send_client(int fd)
 {
-    // 서버가 클라이언트한테 소캣을 보내는 경우,,?
-    int send_data = send(fd, "awd", 3, 0);
-
-    std::cout << "HERE!!\n";
-    if (send_data < 0)
-    {
-        std::cout << "Error: Sending data failed" << std::endl;
-        return;
-    }
+    socketFdToClient[fd].sendData();
 }
 
 #define RED "\e[0;31m"
@@ -412,9 +407,11 @@ void Server::privmsg(Message &message)
 
     for (int i = 0; i < receivers.size(); i++)
     {
-        Message toSendMessage(nicknameToSocketFd[receivers[i]], prefix,
-                              "PRIVMSG", textToBeSent);
-        toSendMessage.sendToClient();
+        int socketToSend = nicknameToSocketFd[receivers[i]];
+        Client &clientToSend = socketFdToClient[socketToSend];
+        Message messageToBeSent =  Message(nicknameToSocketFd[receivers[i]], prefix, "PRIVMSG", textToBeSent);
+
+        clientToSend.sendMessage(messageToBeSent);
     }
 
     //추가적인 부분해야될 거
@@ -884,4 +881,8 @@ bool Server::setMode(Message &message, Channel channel)
         return false;
 
     return true;
+}
+int Server::getKque() const
+{
+    return kque;
 }

@@ -37,6 +37,8 @@ enum Cmd
     TOPIC
 };
 
+class Client;
+
 class Server
 {
   private:
@@ -56,12 +58,14 @@ class Server
     Server(int portNumber, std::string password);
     ~Server();
 
+    int getKque() const;
+
     void openSocket();
     void init();
     void run();
     void handleNewConnection(int sockFd);
     void handleExistingConnection(int sockFd, struct kevent event);
-    void handleExistingConnection_send_client(int fd, struct kevent event);
+    void handleExistingConnection_send_client(int fd);
     bool isConnected(int fd, struct kevent event);
     void terminateConnection(int fd, struct kevent event);
     void execCommand(Message message);
