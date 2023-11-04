@@ -10,11 +10,12 @@ void Command::password_incorrect_464(Message &message)
 
     Client &client = serverInstance->getSocketFdToClient()[message.getSocket()];
     std::string nickname = client.getNickname();
-    std::string error_message = ":irc_local 464 " + nickname + " :Password Incorrect, Command disconnected";
+    std::string error_message = ":irc_local 464 " + nickname +
+                                " :Password Incorrect, Command disconnected";
 
     client.sendMessage(error_message);
 }
-환
+
 void Command::command_empty_argument_461(Message &message)
 {
     std::string error_message = " :irc_local 461 :Not enough parameters";
@@ -45,8 +46,11 @@ std::string &Command::getServerPassWord(void)
 
 void Command::duplicate_check_433(Message &message)
 {
-    std::string error_message = ":irc_local 433 " + message.getArg()[0] + " " + message.getArg()[0] + " :Nickname is already in use";
-    serverInstance->getSocketFdToClient()[message.getSocket()].sendMessage(error_message);
+    std::string error_message = ":irc_local 433 " + message.getArg()[0] + " " +
+                                message.getArg()[0] +
+                                " :Nickname is already in use";
+    serverInstance->getSocketFdToClient()[message.getSocket()].sendMessage(
+        error_message);
 }
 
 void Command::empty_argument_431(Message &message)
@@ -118,7 +122,6 @@ void Command::characters_not_allowed_432(Message &message)
     std::string error_message = " :irc_local 432 :Erroneus nickname";
     // error 432 "<client> <nick> :Erroneus nickname"
     std::cout << message.getArg()[0] << error_message << std::endl;
-
 }
 
 void Command::no_topic_channel_331(Message &message)
@@ -132,7 +135,43 @@ void Command::success_invite_341(Message &message)
 {
     std::string success_message = " :irc_local SUCCESS ";
     // error 331 "<client> <channel> :No topic is set"
-    std::cout << success_message << message.getArg()[1] << " " << message.getArg()[0] << std::endl;
+    std::cout << success_message << message.getArg()[1] << " "
+              << message.getArg()[0] << std::endl;
+}
+
+void Command::no_such_server_402(std::string channel_name)
+{
+    std::string error_message = " :irc_local :No such server";
+    //"<client> <server name> :No such server"
+    std::cout << channel_name << " " << error_message << std::endl;
+}
+
+void Command::no_nick_member_401(std::string no_nick)
+{
+    std::string error_message = " :irc_local :No such nick/channel";
+    //"<client> <nickname> :No such nick/channel"
+    std::cout << no_nick << error_message << std::endl;
+}
+
+void Command::no_reciver_411(Message &message)
+{
+    std::string error_message = " :irc_local :No recipient given ";
+    //"<client> :No recipient given (<command>)"
+    std::cout << error_message << message.getCommand() << std::endl;
+}
+
+void Command::no_exist_message_412(Message &message)
+{
+    std::string error_message = " :irc_local :No text to send";
+    //"<client> :No text to send"
+    std::cout << error_message << std::endl;
+}
+
+void Command::no_member_channel_404(std::string channel)
+{
+    std::string error_message = " :irc_local :Cannot send to channel";
+    //"<client> <channel> :Cannot send to channel"
+    std::cout << channel << error_message << std::endl;
 }
 
 //----------------------------command------------------------------//
@@ -192,11 +231,11 @@ void Command::nick(Message &message)
     }
 
     //* ERR_ERRONEUSNICKNAME (432)
-    //NICK에 들어가면 안 되는 문자 == NULL, CR, LF, space
+    // NICK에 들어가면 안 되는 문자 == NULL, CR, LF, space
     int i = 0;
     std::string nick = message.getArg()[0];
     while (nick[i])
-    { 
+    {
         if (nick[i] == '\r' || nick[i] == '\n' || nick[i] == ' ')
             characters_not_allowed_432(message);
         i++;
@@ -204,7 +243,9 @@ void Command::nick(Message &message)
 
     Client &client = socketFdToClient[message.getSocket()];
 
-    Message messageToSend(client.getSocket(), ":irc.local 001 " + client.getNickname() + " :Welcome to the Internet Relay Network");
+    Message messageToSend(client.getSocket(),
+                          ":irc.local 001 " + client.getNickname() +
+                              " :Welcome to the Internet Relay Network");
     client.sendMessage(messageToSend);
 }
 
@@ -229,31 +270,102 @@ void Command::privmsg(Message &message)
     // isunwoo님이 하신 거
     // 이 부분은 여러 사용자들에게 메세지를 보낼 때 인 듯
     // 즉 첫 번째 자리에 여러 수신자들만 온 것 같음 이 부분이
+
+    // ERR_NORECIPIENT (411) -> 수진자 지정 x
+    if (message.getArg()[0].empty())
+    {
+        no_reciver_411(message);
+        return;
+    }
+
     std::vector<std::string> receivers =
         split(message.getArg()[0], ','); // 수신자 여러명 쪼갬
+
+    // ERR_NOTEXTTOSEND (412) -> 보낼 텍스트가 없음.
+    if (message.getArg()[1].empty())
+    {
+        no_exist_message_412(message);
+        return;
+    }
     std::vector<std::string> textToBeSent;
-    for (int i = 0; i < message.getArg().size();
-         i++) // arg에서 수신자 닉네임 뒤 부터 다 집어넣음
+    for (int i = 0; i < message.getArg().size(); i++)
         textToBeSent.push_back(message.getArg()[i]);
+
+    //- ERR_CANNOTSENDTOCHAN (404) -> 채널에 못 보낼 경우
+    //- `PRIVMSG`/ 를 `NOTICE`에 전달할 수 없음 을 나타냅니다 `<channel>`. 이
+    //메시지의 마지막 매개변수에 사용된 텍스트는 다를 수 있습니다. 이는
+    // 일반적으로 채널이 *[조정되고] 클라이언트가 채널에서 말할 수 있는 권한이
+    // 없거나 *[외부 메시지 없음] * 모드가 설정된 채널에 참여하지 않는 등의 채널
+    //모드에 대한 응답으로 전송됩니다.
+
+    // 1. 클라이언트가 채널에서 말할 수 없는 권한일 때 이 부분 추가해서 보자
+    // MODE l 때 인 것 같은데 subject에 set이라고 있다.
+    // 2. 클라이언트가 채널에 속해있지 않을 때
 
     std::map<int, Client> &socketFdToClient = getServerSocketFdToClient();
     std::map<std::string, int> &nicknameToSocketFd =
         getServernicknameToSocketFd();
-
-    std::string fromNickname = socketFdToClient[message.getSocket()].getNickname();
+    std::string fromNickname =
+        socketFdToClient[message.getSocket()].getNickname();
     std::string prefix = ":" + fromNickname; // 출처 추가
 
+    // 통신 들어가기 전에 검사를 다 하고 가야됨.
+
+    if (receivers[0][0] == '#') // channel로 통신
+    {
+        std::map<std::string, Channel> &channel = getServerChannel();
+        // ERR_NOSUCHSERVER (402) -> 채널이 없음
+        for (unsigned int i = 0; i < receivers.size(); i++)
+        {
+            std::map<std::string, Channel>::iterator iter =
+                channel.find(receivers[i].substr(1, receivers[i].size()));
+            if (iter == channel.end())
+            {
+                no_such_server_402(receivers[i].substr(1, receivers[i].size()));
+                return;
+            }
+            // 2. 클라이언트가 채널에 속해있지 않을 때, ERR_CANNOTSENDTOCHAN
+            // (404)
+            Client &nickname = socketFdToClient[message.getSocket()];
+            std::map<std::string, int> member = iter->second.getMembers();
+            if (member.find(nickname.getNickname()) == member.end())
+            {
+                no_member_channel_404(iter->first);
+                return;
+            }
+        }
+    }
+    // 수신자들 통신
+    else
+    {
+        // ERR_NOSUCHNICK (401) -> 닉네임을 못 찾을 경우
+        for (unsigned int i = 0; i < receivers.size(); i++)
+        {
+            std::map<std::string, int>::iterator iter =
+                nicknameToSocketFd.find(receivers[i]);
+            if (iter == nicknameToSocketFd.end())
+            {
+                no_nick_member_401(receivers[i]);
+                return;
+            }
+        }
+    }
+    // 통신 시작
     for (int i = 0; i < receivers.size(); i++)
     {
+        // 채널로 통신
         if (receivers[i][0] == '#') // channel로 통신
         {
-            serverInstance->getChannel()[receivers[i]].broadcasting(fromNickname, message);
+            serverInstance->getChannel()[receivers[i]].broadcasting(
+                fromNickname, message);
         }
+        // 수신자들 통신
         else
         {
             int socketToSend = nicknameToSocketFd[receivers[i]];
             Client &clientToSend = socketFdToClient[socketToSend];
-            Message messageToBeSent =  Message(nicknameToSocketFd[receivers[i]], prefix, "PRIVMSG", textToBeSent);
+            Message messageToBeSent = Message(nicknameToSocketFd[receivers[i]],
+                                              prefix, "PRIVMSG", textToBeSent);
 
             clientToSend.sendMessage(messageToBeSent);
         }
@@ -533,13 +645,12 @@ void Command::topic(Message &message)
     }
 
     // 주제 인자 있는지 확인
-    //없으면 RPL_NOTOPIC (331)
+    // 없으면 RPL_NOTOPIC (331)
     if (iterCh->second.getTopic().empty())
     {
         no_topic_channel_331(message);
-        return ;
+        return;
     }
-
 
     // 이거 왜 똑같은 변수가 2개지,,? !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     std::string topic = iterCh->second.getTopic();
@@ -603,10 +714,10 @@ void Command::invite(Message &message)
     */
 
     // 341 하면 좋을 듯
-    //341은 에러가 아니라 성공의 메세지를 보냄
-    //RPL_INVITING (341)
+    // 341은 에러가 아니라 성공의 메세지를 보냄
+    // RPL_INVITING (341)
     success_invite_341(message);
-    return ;
+    return;
 }
 
 // MODE <channel> +/-<mode> (<param>)
@@ -767,4 +878,4 @@ bool Command::setMode(Message &message, Channel channel)
 void Command::quit(Message &message)
 {
     serverInstance->terminateConnection(message.getSocket());
-} 
+}

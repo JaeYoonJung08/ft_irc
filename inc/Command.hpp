@@ -68,6 +68,11 @@ public:
     void characters_not_allowed_432(Message &message);
     void no_topic_channel_331(Message &message);
     void success_invite_341(Message &message);
+    void no_such_server_402(std::string channel_name);
+    void no_nick_member_401(std::string no_nick);
+    void no_reciver_411(Message &message);
+    void no_exist_message_412(Message &message);
+    void no_member_channel_404(std::string channel);
 
 };
 
