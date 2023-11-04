@@ -71,12 +71,14 @@ void Message::parse(std::string msg)
 	for (; i < msg_split.size(); i++)
 		this->argument.push_back(msg_split[i]);
 }
+
 Message::Message(int socket,
                  const std::string &prefix,
                  const std::string &command,
                  const std::vector<std::string> &argument)
         : socket(socket), prefix(prefix), command(command), argument(argument)
 {}
+
 void Message::sendToClient()
 {
     std::string toSend = "";
@@ -84,6 +86,24 @@ void Message::sendToClient()
     toSend += prefix;
     toSend += " ";
     toSend += command;
+    for (int i = 0; i < argument.size(); i++)
+    {
+        toSend += " " + argument[i];
+    }
+    toSend += "\r\n";
+    send(socket, toSend.c_str(), toSend.size(), MSG_DONTWAIT); // non-block으로 전송
+}
+
+void Message::sendToPong()
+{
+    //:irc.local PONG  :ia
+    std::string toSend = "";
+
+    toSend += ":irc.local";
+    toSend += " ";
+    toSend += command;
+    toSend += " ";
+    toSend += ":";
     for (int i = 0; i < argument.size(); i++)
     {
         toSend += " " + argument[i];

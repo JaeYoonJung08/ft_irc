@@ -12,8 +12,10 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include <list>
 #include <map>
 
+#include "../inc/Channel.hpp"
 #include "../inc/Client.hpp"
 #include "../inc/Message.hpp"
 
@@ -46,6 +48,7 @@ class Server
     std::map<std::string, int> nicknameToSocketFd;
     std::map<int, Client> socketFdToClient;
     // TODO: 채널 이름 to Channel map
+    std::map<std::string, Channel> channel;
 
     Server();
 
@@ -58,6 +61,7 @@ class Server
     void run();
     void handleNewConnection(int sockFd);
     void handleExistingConnection(int sockFd, struct kevent event);
+    void handleExistingConnection_send_client(int fd, struct kevent event);
     bool isConnected(int fd, struct kevent event);
     void terminateConnection(int fd, struct kevent event);
     void execCommand(Message message);
@@ -68,17 +72,39 @@ class Server
     void nick(Message &message);
     void user(Message &message);
     void privmsg(Message &message);
-    void join(std::string channel);
-    void part(std::string channel, std::string reason); // 채널 퇴장
-    void quit(std::string reason);                      // 서버 접속 끊기
-    void exit(void); // 서버 접속 끊고 프로그램 종료
+    void ping(Message &message);
+    void pong(Message &message);
+    void join(Message &message);
+    int joinChannelNameCheck(std::string name);
+    void part(Message &message);   // 채널 퇴장
+    void quit(std::string reason); // 서버 접속 끊기
+    void exit(void);               // 서버 접속 끊고 프로그램 종료
 
     /* operators */
-    void kick(std::string channel, std::string nickname,
-              std::string reason); // reason 없어도됨
-    void invite(std::string nickname, std::string channel);
-    void mode(std::string channel, std::string mode);
-    void topic(std::string channel, std::string topic); // topic은 없어도됨
+    void kick(Message &message);
+    void topic(Message &message);
+    void invite(Message &message);
+    void mode(Message &message);
+
+    /* command utils */
+    bool setMode(Message &message, Channel channel);
+
+    /* error */
+    void state_without_setup_324(Message &message);
+    void password_incorrect_464(Message &message);
+    void command_empty_argument_461(Message &message);
+
+    /* nick 433, 431 */
+    void	nick_duplicate_check_433(Message &message);
+    void    nick_empty_argument_431(Message &message);
+
+    /* kick 403 */
+    void no_such_channel_403(Message &message);
+    void no_member_channel_442(Message &message);
+    void user_already_channel_443(Message &message);
+    void no_operator_channel_482(Message &message);
+    void kick_no_users_channel_441(Message &message);
+
 };
 
 #endif
