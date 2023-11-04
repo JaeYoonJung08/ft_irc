@@ -190,7 +190,6 @@ void Server::terminateConnection(int fd, struct kevent event)
 
 void Server::execCommand(Message message)
 {
-    std::cout << "here\n";
     Command &command = Command::getInstance(*this);
     if (message.getCommand() == "PASS")
         command.pass(message);
@@ -212,6 +211,8 @@ void Server::execCommand(Message message)
         command.topic(message);
     else if (message.getCommand() == "INVITE")
         command.invite(message);
+    else if (message.getCommand() == "QUIT")
+        command.quit(message);
     // TODO : MODE - operators only
     // TODO : QUIT, EXIT
 }

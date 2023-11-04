@@ -40,7 +40,7 @@ public:
     void join(Message &message);
     int joinChannelNameCheck(std::string name);
     void part(Message &message);   // 채널 퇴장
-    void quit(std::string reason); // 서버 접속 끊기
+    void quit(Message &message); // 서버 접속 끊기
     void exit(void);               // 서버 접속 끊고 프로그램 종료
 
     /* operators */
@@ -63,6 +63,9 @@ public:
     void user_already_channel_443(Message &message);
     void no_operator_channel_482(Message &message);
     void no_users_channel_441(Message &message);
+    void characters_not_allowed_432(Message &message);
+    void no_topic_channel_331(Message &message);
+    void success_invite_341(Message &message);
 
 };
 

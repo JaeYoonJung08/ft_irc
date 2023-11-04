@@ -120,17 +120,38 @@ void Command::state_without_setup_324(Message &message)
     std::cout << error_message << std::endl;
 }
 
+void Command::characters_not_allowed_432(Message &message)
+{
+    std::string error_message = " :irc_local 432 :Erroneus nickname";
+    // error 432 "<client> <nick> :Erroneus nickname"
+    std::cout << message.getArg()[0] << error_message << std::endl;
+
+}
+
+void Command::no_topic_channel_331(Message &message)
+{
+    std::string error_message = " :irc_local 432 :No topic is set";
+    // error 331 "<client> <channel> :No topic is set"
+    std::cout << message.getArg()[0] << error_message << std::endl;
+}
+
+void Command::success_invite_341(Message &message)
+{
+    std::string success_message = " :irc_local SUCCESS ";
+    // error 331 "<client> <channel> :No topic is set"
+    std::cout << success_message << message.getArg()[1] << " " << message.getArg()[0] << std::endl;
+}
+
 //----------------------------command------------------------------//
 
 void Command::pass(Message &message)
 {
-    std::cout << "here\n";
     // 비밀번호가 틀렸을 경우 ERR_PASSWDMISMATCH (464), 461을 464로 대체
     std::string password = getServerPassWord();
     if (password != message.getArg()[0] || message.getArg()[0].empty())
     {
         password_incorrect_464(message);
-        std::exit(1);
+        close(message.getSocket());
     }
 }
 
@@ -175,10 +196,17 @@ void Command::nick(Message &message)
         duplicate_check_433(message);
         return;
     }
-    //   ERR_NICKCOLLISION (436)
 
-    //    * ERR_ERRONEUSNICKNAME (432) -> 이 부분들도 해야될 필요가 있을끼..?
-    //    이거는 서버마다 다르다고 말함
+    //* ERR_ERRONEUSNICKNAME (432)
+    //NICK에 들어가면 안 되는 문자 == NULL, CR, LF, space
+    int i = 0;
+    std::string nick = message.getArg()[0];
+    while (nick[i])
+    { 
+        if (nick[i] == '\r' || nick[i] == '\n' || nick[i] == ' ')
+            characters_not_allowed_432(message);
+        i++;
+    }
 }
 
 void Command::user(Message &message)
@@ -499,7 +527,14 @@ void Command::topic(Message &message)
         return;
     }
 
-    // 주제 인자 있는지 확인 -> 없으면 RPL_NOTOPIC (331)
+    // 주제 인자 있는지 확인
+    //없으면 RPL_NOTOPIC (331)
+    if (iterCh->second.getTopic().empty())
+    {
+        no_topic_channel_331(message);
+        return ;
+    }
+
 
     // 이거 왜 똑같은 변수가 2개지,,? !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     std::string topic = iterCh->second.getTopic();
@@ -557,12 +592,16 @@ void Command::invite(Message &message)
     }
     iterCh->second.setMembers(newMemberName, 0);
     // 관련 메시지 전송
-    return;
+
     /*
         members[nickname] = 0; // 기본 멤버로 초대
     */
 
     // 341 하면 좋을 듯
+    //341은 에러가 아니라 성공의 메세지를 보냄
+    //RPL_INVITING (341)
+    success_invite_341(message);
+    return ;
 }
 
 // MODE <channel> +/-<mode> (<param>)
@@ -719,3 +758,8 @@ bool Command::setMode(Message &message, Channel channel)
 
     return true;
 }
+
+void Command::quit(Message &message)
+{
+    close(message.getSocket());
+} 
