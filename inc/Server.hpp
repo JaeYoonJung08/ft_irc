@@ -60,7 +60,7 @@ class Server
     void init();
     void run();
     void handleNewConnection(int sockFd);
-    void handleExistingConnection(int fd, struct kevent event);
+    void handleExistingConnection(int sockFd, struct kevent event);
     void handleExistingConnection_send_client(int fd, struct kevent event);
     bool isConnected(int fd, struct kevent event);
     void terminateConnection(int fd, struct kevent event);

@@ -57,7 +57,7 @@ void Server::openSocket()
              sizeof(serverAddr)) == -1)
         throw std::runtime_error("bind error");
     listen(this->serverSocket, LISTEN_BACKLOG_NUM); // 수신하도록 listen
-    // tcp 연결 완료.
+                                                    // tcp 연결 완료.
 }
 
 void Server::init()
@@ -85,11 +85,8 @@ void Server::run()
             throw std::runtime_error("kevent event error");
         for (int i = 0; i < triggered; i++)
         {
-            if ((int)events[i].ident ==
-                this->serverSocket) // 소켓에서 이벤트 발생
+            if ((int) events[i].ident == this->serverSocket) // 소켓에서 이벤트 발생
             {
-                std::cout << "새로운 접속!" << std::endl;
-                // 새로운 접속 처리
                 handleNewConnection(events[i].ident);
             }
             else
@@ -126,8 +123,8 @@ void Server::handleNewConnection(int sockFd)
     struct kevent event;
     int client_addr_size = sizeof(client_addr);
 
-    int newFd = accept(sockFd, (sockaddr *)&client_addr,
-                       (socklen_t *)&client_addr_size);
+    int newFd = accept(sockFd, (sockaddr *) &client_addr,
+                       (socklen_t *) &client_addr_size);
     if (newFd == -1)
         throw std::runtime_error("accept error");
     fcntl(newFd, F_SETFL, O_NONBLOCK); // non-block 설정
@@ -136,8 +133,9 @@ void Server::handleNewConnection(int sockFd)
 
     Client client(newFd);
     socketFdToClient.insert(std::make_pair(newFd, client));
-}
 
+    std::cout << newFd << " : new connect!" << std::endl;
+}
 /* 서버가 클라이언트한테 소켓을 보낼 때*/
 void Server::handleExistingConnection_send_client(int fd, struct kevent event)
 {
@@ -155,33 +153,19 @@ void Server::handleExistingConnection_send_client(int fd, struct kevent event)
 #define RED "\e[0;31m"
 #define NC "\e[0m"
 
-void Server::handleExistingConnection(int fd, struct kevent event)
+void Server::handleExistingConnection(int sockFd, struct kevent event)
 {
-    if (isConnected(fd, event) == false)
+    if (isConnected(sockFd, event) == false)
     {
-        this->terminateConnection(fd, event);
+        this->terminateConnection(sockFd, event);
         return;
     }
 
-    char buffer[1024];
+    std::cout << "--------" << sockFd << "--------" << std::endl;
 
-    memset(buffer, 0, sizeof(buffer));
-
-    int received = recv(fd, buffer, sizeof(buffer), 0);
-    // 만약 데이터 수신이 실패한 경우 오류 메세지
-    if (received < 0)
-    {
-        std::cout << "Error: Receving data failed" << std::endl;
-        return;
-    }
-    std::cout << RED << buffer << NC << std::endl;
-
-    std::vector<std::string> messages = split(buffer, '\n');
-
+    std::vector<Message> messages = this->socketFdToClient[sockFd].readData();
     for (int i = 0; i < messages.size(); i++)
-    {
-        execCommand(Message(fd, messages[i]));
-    }
+        execCommand(messages[i]);
 }
 
 bool Server::isConnected(int fd, struct kevent event)
@@ -235,9 +219,9 @@ int Server::joinChannelNameCheck(std::string name)
     //1번인 & # + !이 오는지 검사, 길이가 50이하 인지 검사
     if (!(name[0] == '&' || name[0] == '#' || name[0] == '+' || name[0] == '!' || name.size() <= 50))
         return false;
-    
+
     //2번 공백 검사, 컨트롤 G 검사, 쉼표 검사 이 3가지가 오면 안 됨
-    int index = 0; 
+    int index = 0;
     while (name[index])
     {
         if (isspace(name[index] != 0) || name[index] == 7 || name[index] == ',')
@@ -253,16 +237,16 @@ int Server::joinChannelNameCheck(std::string name)
 void Server::password_incorrect_464(Message &message)
 {
 	//std::string nick_msg = ":irc_local 464 User :Password Incorrect, Server disconnected";
-    //"<clint> :Password incorrect" 
+    //"<clint> :Password incorrect"
     std::string error_message = " :irc_local 464 :Password Incorrect, Server disconnected";
-    std::cout << message.getSocket() << error_message << std::endl; 
+    std::cout << message.getSocket() << error_message << std::endl;
 }
 
 void	Server::command_empty_argument_461(Message &message)
 {
 	std::string error_message = " :irc_local 461 :Not enough parameters";
     //"<client> <command> :Not enough parameters"
-    std::cout << message.getSocket()<< " " << message.getCommand() << error_message << std::endl; 
+    std::cout << message.getSocket()<< " " << message.getCommand() << error_message << std::endl;
 }
 
 
@@ -270,14 +254,14 @@ void	Server::nick_duplicate_check_433(Message &message)
 {
 	std::string error_message = " :irc_local 433 :Nickname is already in use";
     //"<client> <nick> :Nickname is already in use"
-    std::cout << message.getSocket()<< " " << this->nicknameToSocketFd[message.getArg()[0]] << error_message << std::endl; 
+    std::cout << message.getSocket()<< " " << this->nicknameToSocketFd[message.getArg()[0]] << error_message << std::endl;
 }
 
 void	Server::nick_empty_argument_431(Message &message)
 {
 	std::string error_message = " :irc_local 431 :No nickname given";
     //"<client> :No nickname given"
-    std::cout << message.getSocket() << error_message << std::endl; 
+    std::cout << message.getSocket() << error_message << std::endl;
 }
 
 void Server::no_such_channel_403(Message &message)
@@ -301,7 +285,7 @@ void Server::no_operator_channel_482(Message &message)
      // error 482 "<client> <channel> :You're not channel operator"
     std::cout << message.getSocket() << " " << message.getArg()[0] << error_message << std::endl;
 }
-   
+
 void Server::kick_no_users_channel_441(Message &message)
 {
     std::string error_message = " :irc_local 441 :They aren't on that channel";
@@ -367,8 +351,7 @@ void Server::nick(Message &message)
     }
 
     std::map<int, Client>::iterator iter = socketFdToClient.find(socket);
-    std::map<std::string, int>::iterator iterNicknameToSocket =
-        nicknameToSocketFd.find(newNickname);
+    std::map<std::string, int>::iterator iterNicknameToSocket = nicknameToSocketFd.find(newNickname);
 
     if (iterNicknameToSocket == nicknameToSocketFd.end()) // nickname 중복 아님
     {
@@ -389,12 +372,12 @@ void Server::nick(Message &message)
 
     }
     //    * ERR_NICKCOLLISION (436) -> 다른 서버 중복 닉네임인 것 같은데 할 필요 x 생각됨.
-    //    * ERR_ERRONEUSNICKNAME (432) -> 이 부분들도 해야될 필요가 있을끼..? 이거는 서버마다 다르다고 말함 
+    //    * ERR_ERRONEUSNICKNAME (432) -> 이 부분들도 해야될 필요가 있을끼..? 이거는 서버마다 다르다고 말함
 }
 
 void Server::user(Message &message)
 {
-    //    * ERR_NEEDMOREPARAMS (461) 
+    //    * ERR_NEEDMOREPARAMS (461)
     // 매개변수 충분하지 않음
     if (message.getArg()[0].empty())
     {
@@ -410,8 +393,8 @@ void Server::privmsg(Message &message)
 {
 
     //isunwoo님이 하신 거
-    //이 부분은 여러 사용자들에게 메세지를 보낼 때 인 듯 
-    //즉 첫 번째 자리에 여러 수신자들만 온 것 같음 이 부분이 
+    //이 부분은 여러 사용자들에게 메세지를 보낼 때 인 듯
+    //즉 첫 번째 자리에 여러 수신자들만 온 것 같음 이 부분이
     std::vector<std::string> receivers =
         split(message.getArg()[0], ','); // 수신자 여러명 쪼갬
     std::vector<std::string> textToBeSent;
@@ -447,8 +430,8 @@ void Server::ping(Message &message)
     std::cout << ":irc.local PONG " + message.getArg()[0] << std::endl;
     // pong 메세지 넣어주어야함.
     pong(message);
-    
-    //안해도 될 것 같은 에러 
+
+    //안해도 될 것 같은 에러
     //ERR_NOSUCHSERVER (402)-> 이건 안 해도 될 듯.
     //ERR_NOORIGIN (409) -> 이건 안 해도 될 듯.
 }
@@ -624,7 +607,7 @@ void Server::kick(Message &message)
     // 관련 메시지 전송
     return;
     /*
-        naki 
+        naki
         std::map<std::string, int>::iterator iter = members.find(nickname);
 
         if (iter == members.end()) // 유저 존재 x
@@ -641,7 +624,7 @@ void Server::kick(Message &message)
     */
 
    //jaeyojun
-   //ERR_BADCHANMASK (476) -> 이거 안함 
+   //ERR_BADCHANMASK (476) -> 이거 안함
 }
 
 // TOPIC <channel> (<topic>)
