@@ -79,23 +79,6 @@ Message::Message(int socket,
         : socket(socket), prefix(prefix), command(command), argument(argument)
 {}
 
-void Message::sendToPong()
-{
-    //:irc.local PONG  :ia
-    std::string toSend = "";
-
-    toSend += ":irc.local";
-    toSend += " ";
-    toSend += command;
-    toSend += " ";
-    toSend += ":";
-    for (int i = 0; i < argument.size(); i++)
-    {
-        toSend += " " + argument[i];
-    }
-    toSend += "\r\n";
-    send(socket, toSend.c_str(), toSend.size(), MSG_DONTWAIT); // non-block으로 전송
-}
 void Message::setPrefix(const std::string &prefix)
 {
     Message::prefix = prefix;

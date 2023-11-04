@@ -280,8 +280,6 @@ void Command::ping(Message &message)
         return;
     }
 
-    std::cout << ":irc.local PONG " + message.getArg()[0] << std::endl;
-    // pong 메세지 넣어주어야함.
     pong(message);
 }
 
@@ -292,11 +290,11 @@ void Command::pong(Message &message)
         textToBeSent.push_back(message.getArg()[i]);
 
     std::map<int, Client> &socketFdToClient = getServerSocketFdToClient();
-    std::string prefix =
-        ":" + socketFdToClient[message.getSocket()].getNickname();
+    std::string prefix = ":irc.local";
 
     Message toSendMessage(message.getSocket(), prefix, "PONG", textToBeSent);
-    toSendMessage.sendToPong();
+
+    socketFdToClient[message.getSocket()].sendMessage(toSendMessage);
 }
 
 int Command::joinChannelNameCheck(std::string name)
@@ -773,5 +771,5 @@ bool Command::setMode(Message &message, Channel channel)
 
 void Command::quit(Message &message)
 {
-    close(message.getSocket());
+    serverInstance->terminateConnection(message.getSocket());
 } 

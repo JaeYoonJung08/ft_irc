@@ -95,7 +95,6 @@ void Client::sendMessage(Message &message)
     this->outBuffer += toSend;
 
     writeOn();
-    //send(socket, toSend.c_str(), toSend.size(), MSG_DONTWAIT); // non-block으로 전송
 }
 
 void Client::sendMessage(std::string &string)
