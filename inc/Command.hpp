@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <cstdlib>
+#include <stdexcept>
 #include "../inc/Message.hpp"
 #include "../inc/Server.hpp"
 #include "../inc/Channel.hpp"

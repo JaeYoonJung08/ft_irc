@@ -89,7 +89,7 @@ class Server
     void handleExistingConnection(int sockFd, struct kevent event);
     void handleExistingConnection_send_client(int fd);
     bool isConnected(int fd, struct kevent event);
-    void terminateConnection(int fd, struct kevent event);
+    void terminateConnection(int fd);
     void execCommand(Message message);
     bool password_checker(const std::string &str);
 
