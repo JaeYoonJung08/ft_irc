@@ -13,6 +13,8 @@ class Server;
 class Client
 {
   private:
+    static Server *serverPtr;
+
     int socket;
     std::string nickname;
     std::string username;
@@ -21,7 +23,8 @@ class Client
 
 
   public:
-    static Server *serverPtr;
+    static void setServerPtr(Server *server_ptr);
+
     Client();
     Client(int socket);
     ~Client();

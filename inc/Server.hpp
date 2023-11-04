@@ -93,7 +93,7 @@ class Server
     void execCommand(Message message);
     bool password_checker(const std::string &str);
 
-
+    Client &getClientByNickname(const std::string &nickname);
 
 };
 

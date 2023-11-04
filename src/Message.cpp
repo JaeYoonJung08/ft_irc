@@ -96,3 +96,7 @@ void Message::sendToPong()
     toSend += "\r\n";
     send(socket, toSend.c_str(), toSend.size(), MSG_DONTWAIT); // non-block으로 전송
 }
+void Message::setPrefix(const std::string &prefix)
+{
+    Message::prefix = prefix;
+}
