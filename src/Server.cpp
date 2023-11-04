@@ -31,7 +31,8 @@ Server::Server(int portNumber, std::string password)
     if (this->kque == -1)
         throw std::runtime_error("kqueue error");
 
-    Client::serverPtr = this;
+    Client::setServerPtr(this);
+    Channel::setServerPtr(this);
 }
 
 void Server::openSocket()
@@ -215,4 +216,18 @@ void Server::execCommand(Message message)
     // TODO : MODE - operators only
     // TODO : QUIT, EXIT
 }
-int Server::getKque() const { return kque; }
+
+int Server::getKque() const
+{
+    return kque;
+}
+
+Client &Server::getClientByNickname(const std::string &nickname)
+{
+    std::map<std::string, int>::iterator iter = nicknameToSocketFd.find(nickname);
+
+//    if (iter == nicknameToSocketFd.end()) // nick name 없으면
+//        return;
+
+    return socketFdToClient[iter->second];
+}

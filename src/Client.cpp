@@ -144,4 +144,8 @@ void Client::sendData()
         writeOff();
     }
 }
+void Client::setServerPtr(Server *server_ptr)
+{
+    serverPtr = server_ptr;
+}
 
