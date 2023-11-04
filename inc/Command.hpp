@@ -23,10 +23,10 @@ public:
         return commandInstance;
     }
 
-    const std::map<std::string,int> &getServernicknameToSocketFd(void); 
-    const std::map<int, Client> &getServerSocketFdToClient(void);
-    const std::map<std::string, Channel> &getServerChannel(void);
-    const std::string &getServerPassWord(void);
+     std::map<std::string,int> &getServernicknameToSocketFd(void); 
+     std::map<int, Client> &getServerSocketFdToClient(void);
+     std::map<std::string, Channel> &getServerChannel(void);
+     std::string &getServerPassWord(void);
 
     /* clients */
     void pass(Message &message);

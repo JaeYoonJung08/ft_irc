@@ -85,7 +85,8 @@ void Server::run()
             throw std::runtime_error("kevent event error");
         for (int i = 0; i < triggered; i++)
         {
-            if ((int) events[i].ident == this->serverSocket) // 소켓에서 이벤트 발생
+            if ((int)events[i].ident ==
+                this->serverSocket) // 소켓에서 이벤트 발생
             {
                 handleNewConnection(events[i].ident);
             }
@@ -123,8 +124,8 @@ void Server::handleNewConnection(int sockFd)
     struct kevent event;
     int client_addr_size = sizeof(client_addr);
 
-    int newFd = accept(sockFd, (sockaddr *) &client_addr,
-                       (socklen_t *) &client_addr_size);
+    int newFd = accept(sockFd, (sockaddr *)&client_addr,
+                       (socklen_t *)&client_addr_size);
     if (newFd == -1)
         throw std::runtime_error("accept error");
     fcntl(newFd, F_SETFL, O_NONBLOCK); // non-block 설정
@@ -164,6 +165,8 @@ void Server::handleExistingConnection(int sockFd, struct kevent event)
     std::cout << "--------" << sockFd << "--------" << std::endl;
 
     std::vector<Message> messages = this->socketFdToClient[sockFd].readData();
+    std::cout << "HERE \n";
+    std::cout << "message size " << messages.size() << std::endl;
     for (int i = 0; i < messages.size(); i++)
         execCommand(messages[i]);
 }
@@ -194,7 +197,8 @@ void Server::terminateConnection(int fd, struct kevent event)
 
 void Server::execCommand(Message message)
 {
-    Command& command = Command::getInstance(*this);
+
+    Command &command = Command::getInstance(*this);
     if (message.getCommand() == "PASS")
         command.pass(message);
     else if (message.getCommand() == "NICK")
@@ -217,5 +221,4 @@ void Server::execCommand(Message message)
         command.invite(message);
     // TODO : MODE - operators only
     // TODO : QUIT, EXIT
-
 }
