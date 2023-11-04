@@ -179,11 +179,17 @@ bool Server::isConnected(int fd, struct kevent event)
 
 void Server::terminateConnection(int fd, struct kevent event)
 {
+    // socket, kqueue 관련 연결 끊음
     struct kevent temp_event;
     EV_SET(&temp_event, fd, EVFILT_READ, EV_DELETE, 0, 0, NULL);
     kevent(kque, &temp_event, 1, NULL, 0, NULL);
     close(fd);
     std::cout << fd << " : close!" << std::endl;
+
+    // server Client 관련 데이터 제거
+    std::string nickname = this->socketFdToClient[fd].getNickname();
+    this->socketFdToClient.erase(fd);
+    this->nicknameToSocketFd.erase(nickname);
 }
 
 void Server::execCommand(Message message)
