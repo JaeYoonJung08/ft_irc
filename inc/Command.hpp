@@ -30,25 +30,25 @@ public:
 
     /* clients */
     void pass(Message &message);
-    // void nick(Message &message);
-    // void user(Message &message);
-    // void privmsg(Message &message);
-    // void ping(Message &message);
-    // void pong(Message &message);
-    // void join(Message &message);
-    // int joinChannelNameCheck(std::string name);
-    // void part(Message &message);   // 채널 퇴장
-    // void quit(std::string reason); // 서버 접속 끊기
-    // void exit(void);               // 서버 접속 끊고 프로그램 종료
+    void nick(Message &message);
+    void user(Message &message);
+    void privmsg(Message &message);
+    void ping(Message &message);
+    void pong(Message &message);
+    void join(Message &message);
+    int joinChannelNameCheck(std::string name);
+    void part(Message &message);   // 채널 퇴장
+    void quit(std::string reason); // 서버 접속 끊기
+    void exit(void);               // 서버 접속 끊고 프로그램 종료
 
     /* operators */
-    // void kick(Message &message);
-    // void topic(Message &message);
-    // void invite(Message &message);
-    // void mode(Message &message);
+    void kick(Message &message);
+    void topic(Message &message);
+    void invite(Message &message);
+    void mode(Message &message);
 
     /* command utils */
-    //bool setMode(Message &message, Channel channel);
+    bool setMode(Message &message, Channel channel);
 
     /* error */
     void state_without_setup_324(Message &message);

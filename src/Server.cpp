@@ -196,54 +196,26 @@ void Server::execCommand(Message message)
 {
     Command& command = Command::getInstance(*this);
     if (message.getCommand() == "PASS")
-    {
-        //pass(message);
         command.pass(message);
-    }
-    // else if (message.getCommand() == "NICK")
-    //     nick(message);
-    // else if (message.getCommand() == "USER")
-    //     user(message);
-    // else if (message.getCommand() == "PRIVMSG")
-    //     privmsg(message);
-    // else if (message.getCommand() == "PING")
-    //     ping(message);
-    // else if (message.getCommand() == "JOIN")
-    //     join(message);
-    // else if (message.getCommand() == "PART")
-    //     part(message);
-    // else if (message.getCommand() == "KICK")
-    //     kick(message);
-    // else if (message.getCommand() == "TOPIC")
-    //     topic(message);
-    // else if (message.getCommand() == "INVITE")
-    //     topic(message);
+    else if (message.getCommand() == "NICK")
+        command.nick(message);
+    else if (message.getCommand() == "USER")
+        command.user(message);
+    else if (message.getCommand() == "PRIVMSG")
+        command.privmsg(message);
+    else if (message.getCommand() == "PING")
+        command.ping(message);
+    else if (message.getCommand() == "JOIN")
+        command.join(message);
+    else if (message.getCommand() == "PART")
+        command.part(message);
+    else if (message.getCommand() == "KICK")
+        command.kick(message);
+    else if (message.getCommand() == "TOPIC")
+        command.topic(message);
+    else if (message.getCommand() == "INVITE")
+        command.invite(message);
     // TODO : MODE - operators only
     // TODO : QUIT, EXIT
 
 }
-
-
-// int Server::joinChannelNameCheck(std::string name)
-// {
-
-//     //1번인 & # + !이 오는지 검사, 길이가 50이하 인지 검사
-//     if (!(name[0] == '&' || name[0] == '#' || name[0] == '+' || name[0] == '!' || name.size() <= 50))
-//         return false;
-    
-//     //2번 공백 검사, 컨트롤 G 검사, 쉼표 검사 이 3가지가 오면 안 됨
-//     int index = 0; 
-//     while (name[index])
-//     {
-//         if (isspace(name[index] != 0) || name[index] == 7 || name[index] == ',')
-//             return false;
-//         index++;
-//     }
-
-//     return true;
-// }
-
-// Command& Server::getCommandInstance() 
-// {
-//     return Command::getInstance(*this); // Command 클래스 생성 시 Server 클래스 인스턴스 전달
-// }
