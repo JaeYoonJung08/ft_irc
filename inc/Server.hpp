@@ -52,7 +52,6 @@ class Server
 
     std::map<std::string, int> nicknameToSocketFd;
     std::map<int, Client> socketFdToClient;
-    // TODO: 채널 이름 to Channel map
     std::map<std::string, Channel> channel;
 
     Server();

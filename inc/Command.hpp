@@ -32,6 +32,8 @@ public:
      std::map<std::string, Channel> &getServerChannel(void);
      std::string &getServerPassWord(void);
 
+    const std::string &getClientNickname(Message &message);
+
     /* clients */
     void pass(Message &message);
     void nick(Message &message);
@@ -41,8 +43,8 @@ public:
     void pong(Message &message);
     void join(Message &message);
     int joinChannelNameCheck(std::string name);
-    void part(Message &message);   // 채널 퇴장
-    void quit(Message &message); // 서버 접속 끊기
+    void part(Message &message);
+    void quit(Message &message);
     void exit(void);               // 서버 접속 끊고 프로그램 종료
 
     /* operators */
@@ -55,7 +57,7 @@ public:
     bool setMode(Message &message, Channel channel);
 
     /* error */
-    void state_without_setup_324(Message &message);
+    void state_without_setup_324(Message &message, std::string clientName, Channel channel);
     void password_incorrect_464(Message &message);
     void command_empty_argument_461(Message &message);
     void duplicate_check_433(Message &message);
@@ -68,12 +70,17 @@ public:
     void characters_not_allowed_432(Message &message);
     void no_topic_channel_331(Message &message);
     void success_invite_341(Message &message);
-    void no_such_server_402(std::string channel_name);
-    void no_nick_member_401(std::string no_nick);
+    void no_such_server_402(std::string channel_name, Message &message);
+    void no_nick_member_401(std::string no_nick, Message &message);
     void no_reciver_411(Message &message);
     void no_exist_message_412(Message &message);
-    void no_member_channel_404(std::string channel);
+    void no_member_channel_404(std::string channel, Message &message);
+    void bad_channel_mask_476(Message &message);
 
+
+
+    void error_no_nickname(Message &message);
+    void success_show_nickname(std::string nickname, Message &message);
 };
 
 

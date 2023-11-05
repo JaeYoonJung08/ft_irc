@@ -223,10 +223,10 @@ void Server::execCommand(Message message)
         command.topic(message);
     else if (message.getCommand() == "INVITE")
         command.invite(message);
+    else if (message.getCommand() == "MODE")
+        command.mode(message);
     else if (message.getCommand() == "QUIT")
         command.quit(message);
-    // TODO : MODE - operators only
-    // TODO : QUIT, EXIT
 }
 
 int Server::getKque() const
