@@ -1,9 +1,45 @@
 # ft_irc
 
-## 오류
-1. nick으로 닉네임 바꿀 때 irssi 파란줄 닉네임 안 바뀜
-
 ## 앞으로 해야할 것
+
+1. nick으로 닉네임 바꿀 때 irssi 파란줄 닉네임 안 바뀜 -> 보류
+2. 함수 테스트 -> 세그 잡기 중요
+3. UPPER_앵무새봇 : /msg parrot I'm a bot! -> reply : I'M A BOT!
+4. 네..
+
+
+- [ ] authenticate
+- [ ] nickname
+- [ ] username
+- [ ] join a channel
+- [ ] private message
+- [ ] channel message
+- [ ] channel operators
+    - [ ] KICK
+    - [ ] INVITE
+    - [ ] TOPIC
+    - [ ] MODE
+        - [ ] i
+        - [ ] t
+        - [ ] k
+        - [ ] o
+        - [ ] l
+
+- [ ] subject 6쪽 Test example
+
+
+
+ 
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
 
 ## 논의 할 내용
 

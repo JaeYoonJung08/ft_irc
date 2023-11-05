@@ -77,7 +77,9 @@ void Command::no_member_channel_442(Message &message)
 void Command::no_operator_channel_482(Message &message)
 {
     std::string error_message = ":irc_local 482 " + getClientNickname(message) + " " +  message.getArg()[0] +" :You're not channel operator";
-    serverInstance->getSocketFdToClient()[message.getSocket()].sendMessage(error_message);
+    //serverInstance->getSocketFdToClient()[message.getSocket()].sendMessage(error_message);
+    Client &client = serverInstance->getSocketFdToClient()[message.getSocket()];
+    client.sendMessage(error_message);
 }
 
 void Command::no_users_channel_441(Message &message)
