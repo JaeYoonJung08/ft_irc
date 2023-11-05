@@ -19,11 +19,9 @@ class Channel
     std::string topic;
     std::map<std::string, int> members; // 0 : member, 1 : operator
     std::string key;
-    int limit;
+    int memberLimit;
     bool MODE_I;
     bool MODE_T;
-    // bool MODE_K;
-    // bool MODE_L;
 
   public:
     Channel();
@@ -42,8 +40,6 @@ class Channel
 
     const bool &getMODE_I() const;
     const bool &getMODE_T() const;
-    // const bool &Channel::getMODE_K() const;
-    // const bool &Channel::getMODE_L() const;
 
     void printMember();
     void broadcasting(std::string &fromNickname, Message &message);

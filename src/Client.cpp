@@ -80,6 +80,7 @@ std::vector<Message> Client::extractMessageFromBuffer()
 
     return ret;
 }
+
 void Client::sendMessage(Message &message)
 {
     std::string toSend = "";

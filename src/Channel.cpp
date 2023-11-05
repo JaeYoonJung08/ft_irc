@@ -10,11 +10,9 @@ Channel::Channel(const std::string &name) : name(name)
 {
     this->topic = "";
     this->key = "";
-    this->limit = 0;
+    this->memberLimit = 0;
     MODE_I = false;
     MODE_T = false;
-    // MODE_K = false;
-    // MODE_L = false;
 }
 
 void Channel::setMembers(const std::string &nickname, const int operator_check)
@@ -29,7 +27,7 @@ const std::string &Channel::getTopic() const { return topic; }
 
 const std::string &Channel::getKey() const { return key; }
 
-const int &Channel::getLimit() const { return limit; }
+const int &Channel::getLimit() const { return memberLimit; }
 
 const std::map<std::string, int> &Channel::getMembers() const
 {
@@ -71,10 +69,3 @@ void Channel::setServerPtr(Server *server_ptr)
 {
     serverPtr = server_ptr;
 }
-
-// const bool &Channel::getMODE_K() const
-// {
-//     return this->MODE_I;
-// }
-
-// const bool &Channel::getMODE_L() const { return this->MODE_I; }
