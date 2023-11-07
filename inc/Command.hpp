@@ -75,6 +75,7 @@ public:
     void no_users_channel_441(Message &message);
     void characters_not_allowed_432(Message &message);
     void no_topic_channel_331(Message &message);
+    void yes_topic_channel_332(Message &message);
     void success_invite_341(Message &message);
     void no_such_server_402(std::string channel_name, Message &message);
     void no_nick_member_401(std::string no_nick, Message &message);
