@@ -210,7 +210,12 @@ void Server::execCommand(Message message)
     else if (message.getCommand() == "USER")
         command.user(message);
     else if (message.getCommand() == "PRIVMSG")
-        command.privmsg(message);
+    {
+        if (!(message.getArg()[0] == "parrot"))
+            command.privmsg(message);
+        else
+            command.parrotmsg(message);
+    }
     else if (message.getCommand() == "PING")
         command.ping(message);
     else if (message.getCommand() == "JOIN")

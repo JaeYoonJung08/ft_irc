@@ -7,7 +7,6 @@
 3. UPPER_앵무새봇 : /msg parrot I'm a bot! -> reply : I'M A BOT!
 4. 네..
 
-
 - [ ] authenticate
 - [ ] nickname
 - [ ] username

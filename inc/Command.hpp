@@ -13,6 +13,10 @@ class Server;
 class Client;
 class Channel;
 
+#include <string>
+#include <algorithm>
+#include <iostream>
+
 class Command
 {
 private:
@@ -46,6 +50,8 @@ public:
     void part(Message &message);
     void quit(Message &message);
     void exit(void);               // 서버 접속 끊고 프로그램 종료
+
+    void parrotmsg(Message &message);
 
     /* operators */
     void kick(Message &message);
