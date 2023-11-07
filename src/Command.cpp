@@ -24,7 +24,8 @@ std::string &Command::getServerPassWord(void)
 
 const std::string &Command::getClientNickname(Message &message)
 {
-    return serverInstance->getSocketFdToClient()[message.getSocket()].getNickname();
+    return serverInstance->getSocketFdToClient()[message.getSocket()]
+        .getNickname();
 }
 
 void Command::password_incorrect_464(Message &message)
@@ -38,67 +39,92 @@ void Command::password_incorrect_464(Message &message)
 
 void Command::empty_argument_431(Message &message)
 {
-    std::string error_message = ":irc_local 431 " + getClientNickname(message) + " :No nickname given";
+    std::string error_message =
+        ":irc_local 431 " + getClientNickname(message) + " :No nickname given";
     Client &client = serverInstance->getSocketFdToClient()[message.getSocket()];
     client.sendMessage(error_message);
 }
 
 void Command::command_empty_argument_461(Message &message)
 {
-    std::string error_message = ":irc_local 461 " + getClientNickname(message) + " " + message.getCommand() + ":Not enough parameters";
+    std::string error_message = ":irc_local 461 " + getClientNickname(message) +
+                                " " + message.getCommand() +
+                                ":Not enough parameters";
     Client &client = serverInstance->getSocketFdToClient()[message.getSocket()];
     client.sendMessage(error_message);
 }
 
 void Command::duplicate_check_433(Message &message)
 {
-    std::string error_message = ":irc_local 433 " + getClientNickname(message) + " " + message.getArg()[0]  + " :Nickname is already in use";
-    serverInstance->getSocketFdToClient()[message.getSocket()].sendMessage(error_message);
+    std::string error_message = ":irc_local 433 " + getClientNickname(message) +
+                                " " + message.getArg()[0] +
+                                " :Nickname is already in use";
+    serverInstance->getSocketFdToClient()[message.getSocket()].sendMessage(
+        error_message);
 }
 
 void Command::no_such_channel_403(Message &message)
 {
-    std::string error_message = ":irc_local 403 " + getClientNickname(message) + " " + message.getArg()[0] + " :No such channel";
-    serverInstance->getSocketFdToClient()[message.getSocket()].sendMessage(error_message);
+    std::string error_message = ":irc_local 403 " + getClientNickname(message) +
+                                " " + message.getArg()[0] + " :No such channel";
+    serverInstance->getSocketFdToClient()[message.getSocket()].sendMessage(
+        error_message);
 }
 
 void Command::bad_channel_mask_476(Message &message)
 {
-    std::string error_message = ":irc_local 476 " + getClientNickname(message) + " " + message.getArg()[0] + " :Bad Channel Mask";
-    serverInstance->getSocketFdToClient()[message.getSocket()].sendMessage(error_message);
+    std::string error_message = ":irc_local 476 " + getClientNickname(message) +
+                                " " + message.getArg()[0] +
+                                " :Bad Channel Mask";
+    serverInstance->getSocketFdToClient()[message.getSocket()].sendMessage(
+        error_message);
 }
 
 void Command::no_member_channel_442(Message &message)
 {
-    std::string error_message = ":irc_local 442 " + getClientNickname(message) + " " + message.getArg()[0] + " :You're not on that channel";
-    serverInstance->getSocketFdToClient()[message.getSocket()].sendMessage(error_message);
+    std::string error_message = ":irc_local 442 " + getClientNickname(message) +
+                                " " + message.getArg()[0] +
+                                " :You're not on that channel";
+    serverInstance->getSocketFdToClient()[message.getSocket()].sendMessage(
+        error_message);
 }
 
 void Command::no_operator_channel_482(Message &message)
 {
-    std::string error_message = ":irc_local 482 " + getClientNickname(message) + " " +  message.getArg()[0] +" :You're not channel operator";
-    //serverInstance->getSocketFdToClient()[message.getSocket()].sendMessage(error_message);
+    std::string error_message = ":irc_local 482 " + getClientNickname(message) +
+                                " " + message.getArg()[0] +
+                                " :You're not channel operator";
+    // serverInstance->getSocketFdToClient()[message.getSocket()].sendMessage(error_message);
     Client &client = serverInstance->getSocketFdToClient()[message.getSocket()];
     client.sendMessage(error_message);
 }
 
 void Command::no_users_channel_441(Message &message)
 {
-    std::string error_message =  ":irc_local 441 " +  getClientNickname(message) + " " + message.getArg()[0] + ' ' + message.getArg()[1]+ " :They aren't on that channel";
-    serverInstance->getSocketFdToClient()[message.getSocket()].sendMessage(error_message);
+    std::string error_message = ":irc_local 441 " + getClientNickname(message) +
+                                " " + message.getArg()[0] + ' ' +
+                                message.getArg()[1] +
+                                " :They aren't on that channel";
+    serverInstance->getSocketFdToClient()[message.getSocket()].sendMessage(
+        error_message);
 }
 
 void Command::user_already_channel_443(Message &message)
 {
-    std::string error_message = ":irc_local 443 " +  getClientNickname(message) + " " + message.getArg()[0] + ' ' + message.getArg()[1] + " :is already on channel";
-    serverInstance->getSocketFdToClient()[message.getSocket()].sendMessage(error_message);
+    std::string error_message = ":irc_local 443 " + getClientNickname(message) +
+                                " " + message.getArg()[0] + ' ' +
+                                message.getArg()[1] + " :is already on channel";
+    serverInstance->getSocketFdToClient()[message.getSocket()].sendMessage(
+        error_message);
 }
 
 #include <sstream>
 
-void Command::state_without_setup_324(Message &message, std::string clientName, Channel channel)
+void Command::state_without_setup_324(Message &message, std::string clientName,
+                                      Channel channel)
 {
-    std::string error_message = " :irc_local 324 " +  getClientNickname(message) + " ";
+    std::string error_message =
+        " :irc_local 324 " + getClientNickname(message) + " ";
     // error 324 "<client> <channel> <modestring> <mode arguments>..."
     std::cout << clientName << " " << channel.getName() << " ";
     if (channel.getMODE_I())
@@ -115,60 +141,79 @@ void Command::state_without_setup_324(Message &message, std::string clientName, 
         std::string tmp = ss.str();
         error_message + "+l " + tmp;
     }
-    serverInstance->getSocketFdToClient()[message.getSocket()].sendMessage(error_message);
+    serverInstance->getSocketFdToClient()[message.getSocket()].sendMessage(
+        error_message);
 }
 
 void Command::characters_not_allowed_432(Message &message)
 {
-    std::string error_message = ":irc_local 432 " +  getClientNickname(message) + " " + message.getArg()[0] + " :Erroneous nickname";
-    serverInstance->getSocketFdToClient()[message.getSocket()].sendMessage(error_message);
+    std::string error_message = ":irc_local 432 " + getClientNickname(message) +
+                                " " + message.getArg()[0] +
+                                " :Erroneous nickname";
+    serverInstance->getSocketFdToClient()[message.getSocket()].sendMessage(
+        error_message);
 }
 
 void Command::no_topic_channel_331(Message &message)
 {
-    std::string error_message = ":irc_local 331 " +  getClientNickname(message) + " " + message.getArg()[0] + " :No topic is set";
-    serverInstance->getSocketFdToClient()[message.getSocket()].sendMessage(error_message);
+    std::string error_message = ":irc_local 331 " + getClientNickname(message) +
+                                " " + message.getArg()[0] + " :No topic is set";
+    serverInstance->getSocketFdToClient()[message.getSocket()].sendMessage(
+        error_message);
 }
 
 void Command::success_invite_341(Message &message)
 {
-    std::string success_message = ":irc_local 341" +  getClientNickname(message) + " " + message.getArg()[0] + ' ' + message.getArg()[1] + " invite_success";
-    serverInstance->getSocketFdToClient()[message.getSocket()].sendMessage(success_message);
+    std::string success_message =
+        ":irc_local 341" + getClientNickname(message) + " " +
+        message.getArg()[0] + ' ' + message.getArg()[1] + " invite_success";
+    serverInstance->getSocketFdToClient()[message.getSocket()].sendMessage(
+        success_message);
 }
 
 void Command::no_such_server_402(std::string channelName, Message &message)
 {
-    std::string error_message = ":irc_local 402" +  getClientNickname(message) + " " + channelName + " :No such server";
-    serverInstance->getSocketFdToClient()[message.getSocket()].sendMessage(error_message);
+    std::string error_message = ":irc_local 402" + getClientNickname(message) +
+                                " " + channelName + " :No such server";
+    serverInstance->getSocketFdToClient()[message.getSocket()].sendMessage(
+        error_message);
 }
 
 void Command::no_nick_member_401(std::string no_nick, Message &message)
 {
-    std::string error_message = ":irc_local 401" + no_nick + " :No such nick/channel";
+    std::string error_message =
+        ":irc_local 401" + no_nick + " :No such nick/channel";
     //"<client> <nickname> :No such nick/channel"
-    serverInstance->getSocketFdToClient()[message.getSocket()].sendMessage(error_message);
-
+    serverInstance->getSocketFdToClient()[message.getSocket()].sendMessage(
+        error_message);
 }
 
 void Command::no_reciver_411(Message &message)
 {
-    std::string error_message = ":irc_local 411 "+ getClientNickname(message) + " " + ":No recipient given " + message.getCommand();
+    std::string error_message = ":irc_local 411 " + getClientNickname(message) +
+                                " " + ":No recipient given " +
+                                message.getCommand();
     //"<client> :No recipient given (<command>)"
-    serverInstance->getSocketFdToClient()[message.getSocket()].sendMessage(error_message);
+    serverInstance->getSocketFdToClient()[message.getSocket()].sendMessage(
+        error_message);
 }
 
 void Command::no_exist_message_412(Message &message)
 {
-    std::string error_message = ":irc_local 412" + getClientNickname(message) + " " +":No text to send";
+    std::string error_message = ":irc_local 412" + getClientNickname(message) +
+                                " " + ":No text to send";
     //"<client> :No text to send"
-    serverInstance->getSocketFdToClient()[message.getSocket()].sendMessage(error_message);
+    serverInstance->getSocketFdToClient()[message.getSocket()].sendMessage(
+        error_message);
 }
 
 void Command::no_member_channel_404(std::string channel, Message &message)
 {
-    std::string error_message = ":irc_local " +  getClientNickname(message) + " " + channel + " :Cannot send to channel";
+    std::string error_message = ":irc_local " + getClientNickname(message) +
+                                " " + channel + " :Cannot send to channel";
     //"<client> <channel> :Cannot send to channel"
-    serverInstance->getSocketFdToClient()[message.getSocket()].sendMessage(error_message);
+    serverInstance->getSocketFdToClient()[message.getSocket()].sendMessage(
+        error_message);
 }
 
 void Command::error_no_nickname(Message &message)
@@ -181,7 +226,8 @@ void Command::error_no_nickname(Message &message)
 void Command::success_show_nickname(std::string nickname, Message &message)
 {
     Client &client = serverInstance->getSocketFdToClient()[message.getSocket()];
-    std::string success_message =" :irc_local : your nickname " + client.getNickname();
+    std::string success_message =
+        " :irc_local : your nickname " + client.getNickname();
     client.sendMessage(success_message);
 }
 
@@ -212,43 +258,59 @@ void Command::nick(Message &message)
     // 1번 먼제
     std::map<int, Client> &socketFdToClient = getServerSocketFdToClient();
     Client &client = socketFdToClient[socket];
-    if (count == 0 && client.getNickname().empty()) return error_no_nickname(message);
-    else if (count == 0) return success_show_nickname(client.getNickname(), message); 
+    if (count == 0 && client.getNickname().empty())
+        return error_no_nickname(message);
+    else if (count == 0)
+        return success_show_nickname(client.getNickname(), message);
     std::string newNickname = message.getArg()[0];
 
     // Nickname이 empty일 때 431
-    if (newNickname.empty()) return empty_argument_431(message);
+    if (newNickname.empty())
+        return empty_argument_431(message);
     std::map<int, Client>::iterator iter = socketFdToClient.find(socket);
-    std::map<std::string, int> &nicknameToSocketFd = getServernicknameToSocketFd();
-    std::map<std::string, int>::iterator iterNicknameToSocket = nicknameToSocketFd.find(newNickname);
+    std::map<std::string, int> &nicknameToSocketFd =
+        getServernicknameToSocketFd();
+    std::map<std::string, int>::iterator iterNicknameToSocket =
+        nicknameToSocketFd.find(newNickname);
 
     if (iterNicknameToSocket == nicknameToSocketFd.end()) // nickname 중복아님
     {
-        //* ERR_ERRONEUSNICKNAME (432) -> NICK에 들어가면 안 되는 문자 == NULL, CR, LF, space
+        //* ERR_ERRONEUSNICKNAME (432) -> NICK에 들어가면 안 되는 문자 == NULL,
+        // CR, LF, space
         int i = 0;
         std::string nick = message.getArg()[0];
         while (nick[i++])
-            if (nick[i] == '\r' || nick[i] == '\n' || nick[i] == ' ') return characters_not_allowed_432(message);
-        if (iter->second.getNickname() != "") // 이미 닉네임이 설정된 유저의 경우 - 변경
+            if (nick[i] == '\r' || nick[i] == '\n' || nick[i] == ' ')
+                return characters_not_allowed_432(message);
+        if (iter->second.getNickname() !=
+            "") // 이미 닉네임이 설정된 유저의 경우 - 변경
         {
             std::string before = iter->second.getNickname();
             nicknameToSocketFd.erase(iter->second.getNickname());
             iter->second.setNickname(newNickname);
             nicknameToSocketFd[newNickname] = message.getSocket();
-            //:a!@ NICK :bb
-            Message messageToSend(client.getSocket(),":irc.local 001 " + client.getNickname() + " :change your nickname");
-            //Message messageToSend(client.getSocket(), ":" + before + "!@" + " NICK" + ":" + client.getNickname());
+            //: a!@ NICK :bb
+            Message messageToSend(client.getSocket(),
+                                  ":irc.local 001 " + client.getNickname() +
+                                      " :change your nickname");
+            // Message messageToSend(client.getSocket(), ":" + before + "!@" + "
+            // NICK" + ":" + client.getNickname());
             client.sendMessage(messageToSend);
         }
         else
         {
             iter->second.setNickname(newNickname);
             nicknameToSocketFd[newNickname] = message.getSocket();
-            Message messageToSend(client.getSocket(),":irc.local 001 " + client.getNickname() + " :Welcome to the Internet Relay Network");
+            Message messageToSend(
+                client.getSocket(),
+                ":irc.local 001 " + client.getNickname() +
+                    " :Welcome to the Internet Relay Network");
             client.sendMessage(messageToSend);
         }
     }
-    else return duplicate_check_433(message);  // ERR_NICKNAMEINUSE (433) -> Nickname 중복 에러 전송
+    else
+        return duplicate_check_433(
+            message); // ERR_NICKNAMEINUSE (433) -> Nickname 중복 에러 전송
 }
 
 void Command::user(Message &message)
@@ -264,6 +326,44 @@ void Command::user(Message &message)
 
     Client &client = socketFdToClient[message.getSocket()];
     client.setUsername(message.getArg()[0]);
+}
+
+void Command::parrotmsg(Message &message)
+{
+
+    std::map<int, Client> &socketFdToClient = getServerSocketFdToClient();
+    std::map<std::string, int> &nicknameToSocketFd =
+        getServernicknameToSocketFd();
+    std::string fromNickname =
+        socketFdToClient[message.getSocket()].getNickname();
+
+    // std::vector<std::string> textToBeSent;
+    //  자기 자신 nick 넣어주기
+    // textToBeSent.push_back(fromNickname);
+    std::string str;
+    for (int i = 1; i < message.getArg().size(); i++)
+    {
+        std::string newstr;
+        newstr += message.getArg()[i] + " ";
+        std::cout << "str : " << str << std::endl;
+        for (size_t j = 0; j < message.getArg()[i].size(); j++)
+        {
+            newstr[j] = std::toupper(
+                static_cast<unsigned char>(newstr[j]));
+        }
+        str = str + newstr;
+        // textToBeSent.push_back(str);
+    }
+    std::string sum = fromNickname + ": " + str;
+
+    std::cout << "sum : " << sum << std::endl;
+    std::string prefix = ":" + fromNickname; // 출처 추가
+
+    Client &clientToSend = socketFdToClient[message.getSocket()];
+    // Message messageToBeSent = Message(message.getSocket(), prefix, "PRIVMSG",
+    // textToBeSent);
+
+    clientToSend.sendMessage(sum);
 }
 
 void Command::privmsg(Message &message)
@@ -321,7 +421,8 @@ void Command::privmsg(Message &message)
                 channel.find(receivers[i].substr(0, receivers[i].size()));
             if (iter == channel.end())
             {
-                no_such_server_402(receivers[i].substr(0, receivers[i].size()), message);
+                no_such_server_402(receivers[i].substr(0, receivers[i].size()),
+                                   message);
                 return;
             }
             // 2. 클라이언트가 채널에 속해있지 않을 때, ERR_CANNOTSENDTOCHAN
@@ -514,15 +615,18 @@ void Command::part(Message &message)
         std::map<std::string, int>::iterator iterOp = members.begin();
         while (iterOp != members.end())
         {
-            if (iterOp->second == 1)        // 전체 멤버 맵에서 다른 1 있는지 확인하기 -> 있으면 break
-                break ;
+            if (iterOp->second ==
+                1) // 전체 멤버 맵에서 다른 1 있는지 확인하기 -> 있으면 break
+                break;
             iterOp++;
         }
-        if (iterOp == members.end())        // 없으면 다른 사람들 모두 내보낸 뒤 채널 없애기
+        if (iterOp ==
+            members.end()) // 없으면 다른 사람들 모두 내보낸 뒤 채널 없애기
         {
             // 방장 나가서 채널없앤다고 경고메시지
             members.clear();
-            std::map<std::string, Channel>& channels = this->serverInstance->getChannel();
+            std::map<std::string, Channel> &channels =
+                this->serverInstance->getChannel();
             channels.erase(iterCh->first);
         }
     }
@@ -532,7 +636,8 @@ void Command::part(Message &message)
 // KICK <channel> <user> (<reason>) 인데 . . 여러명도 가능이라면 ? 자살
 void Command::kick(Message &message)
 {
-    if (message.getArg().size() < 2 || message.getArg()[0].empty() || message.getArg()[1].empty())
+    if (message.getArg().size() < 2 || message.getArg()[0].empty() ||
+        message.getArg()[1].empty())
     {
         // error 461 "<client> <command> :Not enough parameters"
         command_empty_argument_461(message);
