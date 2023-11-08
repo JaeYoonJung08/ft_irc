@@ -197,13 +197,14 @@ void Command::yes_topic_channel_332(Message &message, std::string topic)
         reply);
 }
 
-void Command::success_invite_341(Message &message)
+void Command::success_invite_341(Message &message, std::string newMemberName)
 {
     std::string success_message =
         ":irc_local 341 " + getClientNickname(message) + " " +
-        message.getArg()[0] + ' ' + message.getArg()[1] + " invite_success";
+        message.getArg()[0] + " " + message.getArg()[1];
     serverInstance->getSocketFdToClient()[message.getSocket()].sendMessage(
         success_message);
+    serverInstance->getClientByNickname(newMemberName).sendMessage(success_message);
 }
 
 void Command::no_such_server_402(std::string channelName, Message &message)
@@ -825,9 +826,7 @@ void Command::invite(Message &message)
         return;
     }
     iterCh->second.setMembers(newMemberName, 0);
-
-    // 341은 에러가 아니라 성공의 메세지를 보냄
-    success_invite_341(message);
+    success_invite_341(message, newMemberName);
     return;
 }
 
