@@ -2,10 +2,9 @@
 
 ## 앞으로 해야할 것
 
-1. nick으로 닉네임 바꿀 때 irssi 파란줄 닉네임 안 바뀜 -> 보류
+1. /하고 명령어 끝까지 다 안 입력해도 실행이 되는데요?
 2. 함수 테스트 -> 세그 잡기 중요
 3. UPPER_앵무새봇 : /msg parrot I'm a bot! -> reply : I'M A BOT!
-4. 네..
 
 - [ ] authenticate
 - [ ] nickname

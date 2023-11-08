@@ -71,6 +71,33 @@ void Command::no_such_channel_403(Message &message)
         error_message);
 }
 
+void Command::cannot_join_i_473(Message &message)
+{
+    std::string error_message = ":irc_local 473 " + getClientNickname(message) +
+                                " " + message.getArg()[0] +
+                                " :Cannot join channel (+i)";
+    serverInstance->getSocketFdToClient()[message.getSocket()].sendMessage(
+        error_message);
+}
+
+void Command::cannot_join_k_475(Message &message)
+{
+    std::string error_message = ":irc_local 473 " + getClientNickname(message) +
+                                " " + message.getArg()[0] +
+                                " :Cannot join channel (+k)";
+    serverInstance->getSocketFdToClient()[message.getSocket()].sendMessage(
+        error_message);
+}
+
+void Command::cannot_join_l_471(Message &message)
+{
+    std::string error_message = ":irc_local 473 " + getClientNickname(message) +
+                                " " + message.getArg()[0] +
+                                " :Cannot join channel (+l)";
+    serverInstance->getSocketFdToClient()[message.getSocket()].sendMessage(
+        error_message);
+}
+
 void Command::bad_channel_mask_476(Message &message)
 {
     std::string error_message = ":irc_local 476 " + getClientNickname(message) +
@@ -162,10 +189,10 @@ void Command::no_topic_channel_331(Message &message)
         reply);
 }
 
-void Command::yes_topic_channel_332(Message &message)
+void Command::yes_topic_channel_332(Message &message, std::string topic)
 {
     std::string reply = ":irc_local 332 " + getClientNickname(message) +
-                                " " + message.getArg()[0] + " " + message.getArg()[1];
+                                " " + message.getArg()[0] + " " + topic;
     serverInstance->getSocketFdToClient()[message.getSocket()].sendMessage(
         reply);
 }
@@ -191,7 +218,6 @@ void Command::no_nick_member_401(std::string no_nick, Message &message)
 {
     std::string error_message =
         ":irc_local 401 " + no_nick + " :No such nick/channel";
-    //"<client> <nickname> :No such nick/channel"
     serverInstance->getSocketFdToClient()[message.getSocket()].sendMessage(
         error_message);
 }
@@ -567,14 +593,14 @@ void Command::join(Message &message)
     {
         if (iter->second.getMODE_I())
         {
-            // error 473 "<client> <channel> :Cannot join channel (+i)"
+            cannot_join_i_473(message);
             return;
         }
         if (iter->second.getKey() != "")
         {
             if (message.getArg()[1] != iter->second.getKey())
             {
-                // error 475 "<client> <channel> :Cannot join channel (+k)"
+                cannot_join_k_475(message);
                 return;
             }
         }
@@ -582,7 +608,7 @@ void Command::join(Message &message)
         {
             if (iter->second.getMembers().size() >= iter->second.getLimit())
             {
-                // error 471 "<client> <channel> :Cannot join channel (+l)"
+                cannot_join_l_471(message);
                 return;
             }
         }
@@ -621,9 +647,11 @@ void Command::part(Message &message)
     else
     {
         members.erase(nickname);
-        Message reply(message.getSocket(), "PART " + iterCh->first);
-        serverInstance->getChannel()[iterCh->first].broadcasting(nickname,
-                                                                 reply);
+        std::string cmd = "PART " + channelName;
+        if (message.getArg().size() > 1)
+            cmd += " :" + message.getArg()[1];
+        Message reply(message.getSocket(), cmd);
+        serverInstance->getChannel()[channelName].broadcasting(nickname, reply);
         std::map<std::string, int>::iterator iterOp = members.begin();
         while (iterOp != members.end())
         {
@@ -690,8 +718,10 @@ void Command::kick(Message &message)
 
     members.erase(kickName);
     std::string fromNickname = socketFdToClient[message.getSocket()].getNickname();
-    Message reply(message.getSocket(),
-                  "KICK " + iterCh->first + " " + kickName);
+    std::string cmd = "KICK " + channelName + " " + kickName;
+    if (message.getArg().size() > 2)
+        cmd += " :" + message.getArg()[2];
+    Message reply(message.getSocket(), cmd);
     serverInstance->getChannel()[iterCh->first].broadcasting(fromNickname, reply);
     return;
 }
@@ -727,15 +757,14 @@ void Command::topic(Message &message)
     }
     if (message.getArg().size() == 1)
     {
-        // 주제 없으면 RPL_NOTOPIC (331)
-        if (iterCh->second.getTopic().empty())
+        if (channel[channelName].getTopic().empty())
             no_topic_channel_331(message);
         else
-            yes_topic_channel_332(message);
+            yes_topic_channel_332(message, channel[channelName].getTopic());
         return;
     }
 
-    if (iterCh->second.getMODE_T() && iterNick->second != 1)
+    if (channel[channelName].getMODE_T() && iterNick->second != 1)
     {
         no_operator_channel_482(message);
         return;
@@ -746,7 +775,9 @@ void Command::topic(Message &message)
         // std::string &topic = iterCh->second.getTopic();
         std::string &topic = channel[channelName].getTopic();
         topic = message.getArg()[1];
-        yes_topic_channel_332(message);
+        yes_topic_channel_332(message, message.getArg()[1]);
+        Message reply(message.getSocket(), "TOPIC " + channelName + " " + message.getArg()[1]);
+        serverInstance->getChannel()[iterCh->first].broadcasting(nickname, reply);
     }
     return;
 }
@@ -795,13 +826,7 @@ void Command::invite(Message &message)
     }
     iterCh->second.setMembers(newMemberName, 0);
 
-    /*
-        members[nickname] = 0; // 기본 멤버로 초대
-    */
-
-    // 341 하면 좋을 듯
     // 341은 에러가 아니라 성공의 메세지를 보냄
-    // RPL_INVITING (341)
     success_invite_341(message);
     return;
 }
