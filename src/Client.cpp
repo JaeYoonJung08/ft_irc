@@ -27,7 +27,8 @@ void Client::setNickname(std::string nickname)
 
 Client::~Client()
 {}
-const std::string &Client::getNickname() const
+
+std::string &Client::getNickname()
 {
     return nickname;
 }

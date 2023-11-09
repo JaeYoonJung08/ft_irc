@@ -49,6 +49,7 @@ public:
     int joinChannelNameCheck(std::string name);
     void part(Message &message);
     void quit(Message &message);
+    void exit(Message &message);
 
     void parrotmsg(Message &message);
 
@@ -59,10 +60,10 @@ public:
     void mode(Message &message);
 
     /* command utils */
-    bool setMode(Message &message, Channel channel);
+    bool setMode(Message &message, Channel &channel);
 
     /* error */
-    void state_without_setup_324(Message &message, std::string clientName, Channel channel);
+    void channel_mode_324(Message &message, Channel channel);
     void password_incorrect_464(Message &message);
     void command_empty_argument_461(Message &message);
     void duplicate_check_433(Message &message);

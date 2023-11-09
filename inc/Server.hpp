@@ -24,22 +24,6 @@
 
 #define LISTEN_BACKLOG_NUM 5 // listen 에서 대기 큐 갯수.
 
-enum Cmd
-{
-    PASS,
-    NICK,
-    USER,
-    PRIVMSG,
-    JOIN,
-    PART,
-    QUIT,
-    EXIT,
-    KICK,
-    INVITE,
-    MODE,
-    TOPIC
-};
-
 class Client;
 
 class Server

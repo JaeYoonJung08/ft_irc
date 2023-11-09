@@ -1,12 +1,13 @@
 #ifndef CHANNEL_HPP
 #define CHANNEL_HPP
 
+#include "Message.hpp"
+#include "Server.hpp"
 #include <iostream>
 #include <iterator>
 #include <map>
+#include <set>
 #include <string>
-#include "Server.hpp"
-#include "Message.hpp"
 
 class Server;
 
@@ -22,6 +23,7 @@ class Channel
     int memberLimit;
     bool MODE_I;
     bool MODE_T;
+    std::set<std::string> invitedNickname;
 
   public:
     Channel();
@@ -31,6 +33,9 @@ class Channel
     static void setServerPtr(Server *server_ptr);
 
     void setMembers(const std::string &nickname, const int operator_check);
+    void inviteNewMember(std::string nickname);
+    bool isInvited(std::string nickname);
+    void deleteMemberFromInvitedList(std::string nickname);
 
     const std::string &getName() const;
     std::string &getTopic();
@@ -40,6 +45,9 @@ class Channel
 
     bool &getMODE_I();
     bool &getMODE_T();
+
+    void setMODE_I(bool mode);
+    void setMODE_T(bool mode);
 
     void printMember();
     void broadcasting(std::string &fromNickname, Message &message);

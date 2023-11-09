@@ -30,7 +30,7 @@ class Client
     ~Client();
     void setUsername(std::string username);
     void setNickname(std::string nickname);
-    const std::string &getNickname() const;
+    std::string &getNickname();
     int getSocket() const;
 
     std::vector<Message> readData();

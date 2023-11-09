@@ -29,7 +29,7 @@ class Message
 
     const std::string &getPrefix() const;
     const std::string &getCommand() const;
-    const std::vector<std::string> &getArg() const;
+    std::vector<std::string> &getArg();
     void setPrefix(const std::string &prefix);
 
     int getSocket();

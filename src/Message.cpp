@@ -38,7 +38,7 @@ const std::string &Message::getCommand() const
 	return (this->command);
 }
 
-const std::vector<std::string> &Message::getArg() const
+std::vector<std::string> &Message::getArg()
 {
 	return (this->argument);
 }
@@ -56,6 +56,8 @@ void Message::parse(std::string msg)
     rtrim(msg);
 
 	std::vector<std::string> msg_split;
+
+    std::cout << "msg " << msg << std::endl;
 	msg_split = split(msg, ' ');
 	int i = 0;
     if (msg[0] == ':')

@@ -8,6 +8,36 @@
 4. 함수 테스트 -> 세그 잡기 중요
 5. UPPER_앵무새봇 : /msg parrot I'm a bot! -> reply : I'M A BOT!
 
+
+테스트 결과
+jaeyojun op
+naki   
+
+1. kick
+    * /kick naki -> 오퍼레이터가 아닌 클라이언트가 kick을 해버리면 채널에서 나가짐
+    * /kick naki (reason) -> 클라이언트 강퇴는 되나 강퇴된 클라이언트에서 강퇴되었다는 정보가 따로 뭐가 오지는 않음.
+    -> 메시지를 채널 브로드캐스팅으로 보내는거라 강퇴된 사람한텐 안갈걸여
+
+2. part
+    * /part -> naki에서 /part를 실행하면 잘 되며 jaeyojun 클라이언트에서도 잘 나옴
+    * /part fuck -> naki에서 /part fuck를 실행하면 jaeyojun 클라이언트에서도 잘 나옴 이유도 나옴.
+
+3. invite
+    * invite는 성공했지만 채널 화면이 안 뜸. !! 고쳐야될 거
+    * 채널에 있는 상태에서 /invite naki -> 메세지가 옴
+    * 채널에 있는 상태에서 /invite naki &ch -> 메세지 안 옴 
+        * 메세지 오게 만들었음.
+
+4. exit
+    * exit으로 나가면 채널 멤버 목록에서 삭제 안 됨.
+-> 걍 엑싯 함수를 만들면 되지 아늘까요 ?
+-> 만들어 볼게용
+
+
+
+
+2. 
+
 - [ ] authenticate
 - [ ] nickname
 - [ ] username
