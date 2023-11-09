@@ -2,10 +2,11 @@
 
 ## 앞으로 해야할 것
 
-1. nick으로 닉네임 바꿀 때 irssi 파란줄 닉네임 안 바뀜 -> 보류
-2. 함수 테스트 -> 세그 잡기 중요
-3. UPPER_앵무새봇 : /msg parrot I'm a bot! -> reply : I'M A BOT!
-4. 네..
+1. /하고 명령어 끝까지 다 안 입력해도 실행이 되는데요?
+2. part나 kick말고 exit으로 나가면 채널 멤버 목록에서 삭제 안됨 -> 다시 초대 안됨 !!
+3. invite 성공했는데 채널 화면이 안뜸 ㅜㅜ 메시지는 옴 테스트해보세여
+4. 함수 테스트 -> 세그 잡기 중요
+5. UPPER_앵무새봇 : /msg parrot I'm a bot! -> reply : I'M A BOT!
 
 - [ ] authenticate
 - [ ] nickname

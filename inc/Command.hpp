@@ -49,7 +49,6 @@ public:
     int joinChannelNameCheck(std::string name);
     void part(Message &message);
     void quit(Message &message);
-    void exit(void);               // 서버 접속 끊고 프로그램 종료
 
     void parrotmsg(Message &message);
 
@@ -75,15 +74,17 @@ public:
     void no_users_channel_441(Message &message);
     void characters_not_allowed_432(Message &message);
     void no_topic_channel_331(Message &message);
-    void success_invite_341(Message &message);
+    void yes_topic_channel_332(Message &message, std::string topic);
+    void success_invite_341(Message &message, std::string newMemberName);
     void no_such_server_402(std::string channel_name, Message &message);
     void no_nick_member_401(std::string no_nick, Message &message);
     void no_reciver_411(Message &message);
     void no_exist_message_412(Message &message);
     void no_member_channel_404(std::string channel, Message &message);
     void bad_channel_mask_476(Message &message);
-
-
+    void cannot_join_i_473(Message &message);
+    void cannot_join_k_475(Message &message);
+    void cannot_join_l_471(Message &message);
 
     void error_no_nickname(Message &message);
     void success_show_nickname(std::string nickname, Message &message);

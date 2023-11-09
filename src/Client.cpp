@@ -4,7 +4,6 @@ Server *Client::serverPtr;
 
 Client::Client()
 {
-
 }
 
 Client::Client(int socket)
@@ -25,8 +24,6 @@ void Client::setNickname(std::string nickname)
 {
     this->nickname = nickname;
 }
-
-// Client::
 
 Client::~Client()
 {}
@@ -61,6 +58,7 @@ std::vector<Message> Client::readData()
 
     return ret;
 }
+
 std::vector<Message> Client::extractMessageFromBuffer()
 {
     std::vector<std::string> messages;
@@ -146,12 +144,13 @@ void Client::sendData()
         writeOff();
     }
 }
+
 void Client::setServerPtr(Server *server_ptr)
 {
     serverPtr = server_ptr;
 }
+
 int Client::getSocket() const
 {
     return socket;
 }
-

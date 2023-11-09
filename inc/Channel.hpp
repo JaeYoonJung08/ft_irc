@@ -33,13 +33,13 @@ class Channel
     void setMembers(const std::string &nickname, const int operator_check);
 
     const std::string &getName() const;
-    const std::string &getTopic() const;
-    const std::map<std::string, int> &getMembers() const;
-    const std::string &getKey() const;
-    const int &getLimit() const;
+    std::string &getTopic();
+    std::map<std::string, int> &getMembers();
+    std::string &getKey();
+    int &getLimit();
 
-    const bool &getMODE_I() const;
-    const bool &getMODE_T() const;
+    bool &getMODE_I();
+    bool &getMODE_T();
 
     void printMember();
     void broadcasting(std::string &fromNickname, Message &message);

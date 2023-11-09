@@ -23,13 +23,13 @@ void Channel::setMembers(const std::string &nickname, const int operator_check)
 
 const std::string &Channel::getName() const { return name; }
 
-const std::string &Channel::getTopic() const { return topic; }
+std::string &Channel::getTopic() { return topic; }
 
-const std::string &Channel::getKey() const { return key; }
+std::string &Channel::getKey() { return key; }
 
-const int &Channel::getLimit() const { return memberLimit; }
+int &Channel::getLimit() { return memberLimit; }
 
-const std::map<std::string, int> &Channel::getMembers() const
+std::map<std::string, int> &Channel::getMembers()
 {
     return members;
 }
@@ -45,9 +45,9 @@ void Channel::printMember()
     // }
 }
 
-const bool &Channel::getMODE_I() const { return this->MODE_I; }
+bool &Channel::getMODE_I() { return this->MODE_I; }
 
-const bool &Channel::getMODE_T() const { return this->MODE_T; }
+bool &Channel::getMODE_T() { return this->MODE_T; }
 
 void Channel::broadcasting(std::string &fromNickname, Message &message)
 {
