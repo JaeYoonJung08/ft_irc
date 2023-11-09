@@ -80,6 +80,7 @@ void Channel::setMODE_T(bool mode)
 void Channel::broadcasting(std::string &fromNickname, Message &message)
 {
     std::map<std::string, int>::iterator iter = this->members.begin();
+
     while (iter != members.end())
     {
         Client &clientToSend = this->serverPtr->getClientByNickname(iter->first);
@@ -87,6 +88,7 @@ void Channel::broadcasting(std::string &fromNickname, Message &message)
         {
             Message messageToSend = message;
             messageToSend.setPrefix(":" + fromNickname);
+
             clientToSend.sendMessage(messageToSend);
         }
         iter++;

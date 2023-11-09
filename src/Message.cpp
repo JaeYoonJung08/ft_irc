@@ -57,7 +57,6 @@ void Message::parse(std::string msg)
 
 	std::vector<std::string> msg_split;
 
-    std::cout << "msg " << msg << std::endl;
 	msg_split = split(msg, ' ');
 	int i = 0;
     if (msg[0] == ':')

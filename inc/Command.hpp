@@ -14,7 +14,7 @@ class Client;
 class Channel;
 
 #include <string>
-#include <algorithm>
+#include <sstream>
 #include <iostream>
 
 class Command

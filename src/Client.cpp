@@ -86,6 +86,8 @@ void Client::sendMessage(Message &message)
     toSend += message.getPrefix();
     toSend += " ";
     toSend += message.getCommand();
+
+
     for (int i = 0; i < message.getArg().size(); i++)
     {
         toSend += " " + message.getArg()[i];

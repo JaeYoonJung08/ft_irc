@@ -59,7 +59,6 @@ void Command::duplicate_check_433(Message &message)
     // std::string error_message = ":irc_local 433 " 
     //                              + message.getArg()[0] +
     //                             " :Nickname is already in use";
-
         std::string error_message = ":irc_local 433 " + message.getArg()[0] + " " +
                                 message.getArg()[0] +
                                 " :Nickname is already in use";
@@ -132,10 +131,15 @@ void Command::no_operator_channel_482(Message &message)
 
 void Command::no_users_channel_441(Message &message)
 {
-    std::string error_message = ":irc_local 441 " + getClientNickname(message) +
-                                " " + message.getArg()[0] + ' ' +
-                                message.getArg()[1] +
-                                " :They aren't on that channel";
+    // std::string error_message = ":irc_local 441 " + getClientNickname(message) +
+    //                             " " + message.getArg()[0] + ' ' +
+    //                             message.getArg()[1] +
+    //                             " :They aren't on that channel";
+
+            std::string error_message = ":irc_local 441 "+  getClientNickname(message) + " " + message.getArg()[1]  +
+        " " + message.getArg()[0] +
+        " :They aren't on that channel";
+
     serverInstance->getSocketFdToClient()[message.getSocket()].sendMessage(
         error_message);
 }
@@ -149,7 +153,7 @@ void Command::user_already_channel_443(Message &message)
         error_message);
 }
 
-#include <sstream>
+
 
 void Command::channel_mode_324(Message &message,
                                       Channel channel)
@@ -288,131 +292,66 @@ void Command::pass(Message &message)
     }
 }
 
-// void Command::nick(Message &message)
-// {
-//     int socket = message.getSocket();
-//     int count = message.getArg().size();
-//     // nick command만 나왔을 때 -> 현재 자신의 닉네임 보여줘야함.
-//     // 1. NICK을 했지만 클라이언트에 nick이 없을 때.
-//     // 2. NICK을 했지만 클라이언트에 nick이 있을 때.
-//     // 1번 먼제
-//     std::map<int, Client> &socketFdToClient = getServerSocketFdToClient();
-//     Client &client = socketFdToClient[socket];
-//     if (count == 0 && client.getNickname().empty())
-//         return error_no_nickname(message);
-//     else if (count == 0)
-//         return success_show_nickname(client.getNickname(), message);
-//     std::string newNickname = message.getArg()[0];
-
-//     // Nickname이 empty일 때 431
-//     if (newNickname.empty())
-//         return empty_argument_431(message);
-//     std::map<int, Client>::iterator iter = socketFdToClient.find(socket);
-//     std::map<std::string, int> &nicknameToSocketFd = getServernicknameToSocketFd();
-//     std::map<std::string, int>::iterator iterNicknameToSocket = nicknameToSocketFd.find(newNickname);
-
-//     if (iterNicknameToSocket == nicknameToSocketFd.end()) // nickname 중복아님
-//     {
-//         std::cout << "clom\n"; 
-//         //* ERR_ERRONEUSNICKNAME (432) -> NICK에 들어가면 안 되는 문자 == NULL,
-//         // CR, LF, space
-//         int i = 0;
-//         std::string nick = message.getArg()[0];
-//         while (nick[i++])
-//             if (nick[i] == '\r' || nick[i] == '\n' || nick[i] == ' ')
-//                 return characters_not_allowed_432(message);
-//         if (iter->second.getNickname() != "") // 이미 닉네임이 설정된 유저의 경우 - 변경
-//         {
-//             nicknameToSocketFd.erase(iter->second.getNickname());
-//             iter->second.setNickname(newNickname);
-//             nicknameToSocketFd[newNickname] = message.getSocket();
-//             //: a!@ NICK :bb
-//             Message messageToSend(client.getSocket(),
-//                                   ":irc.local 001 " + client.getNickname() +
-//                                       " :change your nickname");
-//             // Message messageToSend(client.getSocket(), ":" + before + "!@" + "
-//             // NICK" + ":" + client.getNickname());
-//             client.sendMessage(messageToSend);
-//         }
-//         else
-//         {
-//             std::cout << "first newNick name : " << newNickname << std::endl;
-//             iter->second.setNickname(newNickname);
-//             nicknameToSocketFd[newNickname] = message.getSocket();
-//             Message messageToSend(
-//                 client.getSocket(),
-//                 ":irc.local 001 " + client.getNickname() +
-//                     " :Welcome to the Internet Relay Network");
-//             client.sendMessage(messageToSend);
-//         }
-//     }
-//     else
-//         return duplicate_check_433(
-//             message); // ERR_xNICKNAMEINUSE (433) -> Nickname 중복 에러 전송
-// }
-
 void Command::nick(Message &message)
 {
     int socket = message.getSocket();
+    int count = message.getArg().size();
+    // nick command만 나왔을 때 -> 현재 자신의 닉네임 보여줘야함.
+    // 1. NICK을 했지만 클라이언트에 nick이 없을 때.
+    // 2. NICK을 했지만 클라이언트에 nick이 있을 때.
+    // 1번 먼제
+    std::map<int, Client> &socketFdToClient = getServerSocketFdToClient();
+    Client &client = socketFdToClient[socket];
+    if (count == 0 && client.getNickname().empty())
+        return error_no_nickname(message);
+    else if (count == 0)
+        return success_show_nickname(client.getNickname(), message);
     std::string newNickname = message.getArg()[0];
-
-
-    std::cout << "newNickname: " << newNickname << std::endl;
 
     // Nickname이 empty일 때 431
     if (newNickname.empty())
-    {
-        empty_argument_431(message);
-        return;
-    }
-
-    // 추가
-    std::map<int, Client> &socketFdToClient = getServerSocketFdToClient();
+        return empty_argument_431(message);
     std::map<int, Client>::iterator iter = socketFdToClient.find(socket);
-
-    // 추가
-    std::map<std::string, int> &nicknameToSocketFd =
-        getServernicknameToSocketFd();
-    std::map<std::string, int>::iterator iterNicknameToSocket =
-        nicknameToSocketFd.find(newNickname);
+    std::map<std::string, int> &nicknameToSocketFd = getServernicknameToSocketFd();
+    std::map<std::string, int>::iterator iterNicknameToSocket = nicknameToSocketFd.find(newNickname);
 
     if (iterNicknameToSocket == nicknameToSocketFd.end()) // nickname 중복아님
     {
-        if (iter->second.getNickname() !=
-            "") // 이미 닉네임이 설정된 유저의 경우 - 변경
+        //* ERR_ERRONEUSNICKNAME (432) -> NICK에 들어가면 안 되는 문자 == NULL,
+        // CR, LF, space
+        int i = 0;
+        std::string nick = message.getArg()[0];
+        while (nick[i++])
+            if (nick[i] == '\r' || nick[i] == '\n' || nick[i] == ' ')
+                return characters_not_allowed_432(message);
+        if (iter->second.getNickname() != "") // 이미 닉네임이 설정된 유저의 경우 - 변경
         {
             nicknameToSocketFd.erase(iter->second.getNickname());
+            iter->second.setNickname(newNickname);
+            nicknameToSocketFd[newNickname] = message.getSocket();
+            //: a!@ NICK :bb
+            Message messageToSend(client.getSocket(),
+                                  ":irc.local 001 " + client.getNickname() +
+                                      " :change your nickname");
+            // Message messageToSend(client.getSocket(), ":" + before + "!@" + "
+            // NICK" + ":" + client.getNickname());
+            client.sendMessage(messageToSend);
         }
-        std::cout << "nickname : " << newNickname << std::endl;
-        iter->second.setNickname(newNickname);
-        nicknameToSocketFd[newNickname] = message.getSocket();
+        else
+        {
+            std::cout << "first newNick name : " << newNickname << std::endl;
+            iter->second.setNickname(newNickname);
+            nicknameToSocketFd[newNickname] = message.getSocket();
+            Message messageToSend(
+                client.getSocket(),
+                ":irc.local 001 " + client.getNickname() +
+                    " :Welcome to the Internet Relay Network");
+            client.sendMessage(messageToSend);
+        }
     }
     else
-    {
-        std::cout << newNickname << " : nick 중복" << std::endl;
-        // TODO : Nickname 중복 에러 전송
-        // ERR_NICKNAMEINUSE (433)
-        duplicate_check_433(message);
-        return;
-    }
-
-    //* ERR_ERRONEUSNICKNAME (432)
-    // NICK에 들어가면 안 되는 문자 == NULL, CR, LF, space
-    int i = 0;
-    std::string nick = message.getArg()[0];
-    while (nick[i])
-    {
-        if (nick[i] == '\r' || nick[i] == '\n' || nick[i] == ' ')
-            characters_not_allowed_432(message);
-        i++;
-    }
-
-    Client &client = socketFdToClient[message.getSocket()];
-
-    Message messageToSend(client.getSocket(),
-                          ":irc.local 001 " + client.getNickname() +
-                              " :Welcome to the Internet Relay Network");
-    client.sendMessage(messageToSend);
+        return duplicate_check_433(
+            message); // ERR_xNICKNAMEINUSE (433) -> Nickname 중복 에러 전송
 }
 
 void Command::user(Message &message)
@@ -515,6 +454,7 @@ void Command::privmsg(Message &message)
 
     if (receivers[0][0] == '#' || receivers[0][0] == '&') // channel로 통신
     {
+
         std::map<std::string, Channel> &channel = getServerChannel();
         // ERR_NOSUCHSERVER (402) -> 채널이 없음
         for (unsigned int i = 0; i < receivers.size(); i++)
@@ -530,6 +470,7 @@ void Command::privmsg(Message &message)
             // 2. 클라이언트가 채널에 속해있지 않을 때, ERR_CANNOTSENDTOCHAN
             // (404)
             Client &nickname = socketFdToClient[message.getSocket()];
+            std::cout << "nick:" <<  nickname.getNickname() << std::endl;
             std::map<std::string, int> member = iter->second.getMembers();
             if (member.find(nickname.getNickname()) == member.end())
             {
@@ -567,6 +508,7 @@ void Command::privmsg(Message &message)
         {
             int socketToSend = nicknameToSocketFd[receivers[i]];
             Client &clientToSend = socketFdToClient[socketToSend];
+            // std::cout << "nick:" <<  clientToSend.getNickname() << std::endl;
             Message messageToBeSent = Message(nicknameToSocketFd[receivers[i]],
                                               prefix, "PRIVMSG", textToBeSent);
 
