@@ -486,6 +486,7 @@ void Command::privmsg(Message &message)
         }
 
         iter->second.broadcasting(fromClient.makePrefix(), message);
+
     }
     else // private message
     {
@@ -577,9 +578,8 @@ void Command::join(Message &message)
         // std::cout << "nick:" <<  clientToSend.getNickname() << std::endl;
         // Message messageToBeSent = Message(":" + clientToSend.getNickname(),
         //                                     ":irc.local", "PRIVMSG", "aaa");
-
-        std::map<std::string, Channel>::iterator iter2 = channel.find(channelName);
         Client &clientToJoin = socketFdToClient[message.getSocket()];
+      
         Message reply = message;
         reply.setPrefix(fromClient.makePrefix());
 
@@ -637,6 +637,7 @@ void Command::join(Message &message)
         reply.setPrefix(fromClient.makePrefix());
         clientToJoin.sendMessage(reply);
         iter->second.broadcasting(fromClient.makePrefix(), reply);
+
 
         //join_success(message, channelName);
         yes_topic_channel_332(message, iter->second.getTopic());
