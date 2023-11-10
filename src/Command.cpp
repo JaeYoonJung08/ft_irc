@@ -689,8 +689,15 @@ void Command::join(Message &message)
         iter->second.deleteMemberFromInvitedList(
             socketFdToClient[message.getSocket()].getNickname());
 
+
+        
+
         //join 성공했을 때
-        join_success(message, channelName);
+        Message reply = message;
+        message.setPrefix(":" + clientToJoin.getNickname());
+        iter->second.broadcasting(clientToJoin.getNickname(), reply);
+        clientToJoin.sendMessage(reply);
+        //join_success(message, channelName);
         yes_topic_channel_332(message, iter->second.getTopic());
 
         //join 성공하고 난 후 353 
@@ -698,6 +705,7 @@ void Command::join(Message &message)
 
         //join 성공하고 난 후 366
         join_RPL_ENDOFNAMES_366(message, channelName);
+
 
     }
 }
