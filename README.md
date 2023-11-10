@@ -432,7 +432,7 @@ RFC 2813 인터넷 릴레이 채팅: 서버 프로토콜 2000년 4월
         ```
          "<channel> :Bad Channel Mask"
         ```
-    * RPL_TOPIC (332) -> 안 해도 될 듯
+    * RPL_TOPIC (332)
         * 채널의 <channel>현재 주제 를 알리기 위해 가입 시 클라이언트에게 전송됩니다 .
         ```
         `"<client> <channel> :<topic>"`
@@ -442,7 +442,7 @@ RFC 2813 인터넷 릴레이 채팅: 서버 프로토콜 2000년 4월
         ```cpp
         "<client> <channel> <nick> <setat>"
         ```
-    * RPL_NAMREPLY (353) -> 안 해도 될 듯
+    * RPL_NAMREPLY (353)
         * 명령 에 대한 응답으로 전송된 *`[NAMES](https://modern.ircdocs.horse/#names-message)`*이 숫자는 가입된 클라이언트 `<channel>`와 해당 채널의 상태를 나열합니다. `<symbol>`채널의 상태를 기록합니다. 다음 중 하나일 수 있습니다.
         - `("=", 0x3D)`
             - 공개 채널.
