@@ -77,17 +77,19 @@ void Channel::setMODE_T(bool mode)
     MODE_T = mode;
 }
 
-void Channel::broadcasting(std::string &fromNickname, Message &message)
+void Channel::broadcasting(std::string fromNickname, Message &message)
 {
     std::map<std::string, int>::iterator iter = this->members.begin();
 
     while (iter != members.end())
     {
         Client &clientToSend = this->serverPtr->getClientByNickname(iter->first);
-        if (fromNickname != iter->first)
+        // 풀 prefix 에서 이름만 추출
+        if (fromNickname.substr(1, fromNickname.find('!') - 1) != iter->first)
         {
             Message messageToSend = message;
-            messageToSend.setPrefix(":" + fromNickname + "!" + "username" + "@" + "serverip");
+            messageToSend.setPrefix(fromNickname);
+
             clientToSend.sendMessage(messageToSend);
         }
         iter++;

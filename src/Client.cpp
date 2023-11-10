@@ -174,3 +174,22 @@ int Client::getSocket() const
 {
     return socket;
 }
+
+const std::string &Client::getIpaddress() const
+{
+    return ipaddress;
+}
+
+void Client::setIpaddress(const std::string &ipaddress)
+{
+    Client::ipaddress = ipaddress;
+}
+
+std::string Client::makePrefix()
+{
+    std::string ret = "";
+
+    ret = ":" + nickname + "!" + username + "@" + ipaddress;
+
+    return ret;
+}
