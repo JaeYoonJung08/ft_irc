@@ -50,15 +50,12 @@ int	Message::getSocket()
 
 void Message::parse(std::string msg)
 {
-    // space split -> 맨앞문자가 colon인지 확인 -> colon이면 prefix
-	// 에러처리 뭐할지 ?
-	
     rtrim(msg);
 
 	std::vector<std::string> msg_split;
 
 	msg_split = split(msg, ' ');
-	int i = 0;
+	size_t i = 0;
     if (msg[0] == ':')
 	{
 		this->prefix = msg_split[i++];
@@ -69,8 +66,11 @@ void Message::parse(std::string msg)
 		this->prefix = "";
 		this->command = msg_split[i++];
     }
-	for (; i < msg_split.size(); i++)
-		this->argument.push_back(msg_split[i]);
+	while (i < msg_split.size())
+    {
+        this->argument.push_back(msg_split[i]);
+        i++;
+    }
 }
 
 Message::Message(int socket,
