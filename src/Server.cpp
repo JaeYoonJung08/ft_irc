@@ -182,20 +182,20 @@ void Server::terminateConnection(int fd)
 {
     std::map<std::string, Channel>::iterator iterCh = this->channel.begin();
     std::string &nickname = socketFdToClient[fd].getNickname();
+    std::vector<std::string> channelNamestoDelete;
     for (; iterCh != channel.end(); iterCh++)
     {
         Channel &mini_channel = iterCh->second;
         std::map<std::string, int> &members = mini_channel.getMembers();
         if (members.find(nickname) != members.end())
+        {
             members.erase(members.find(nickname));
+            if (mini_channel.isNoOperator())
+                channelNamestoDelete.push_back(iterCh->first);
+        }
     }
-    // ERROR :Closing link: (naki) [Quit: leaving]
-    Client &clientToJoin = socketFdToClient[fd];
-    std::string message = "ERROR :Closing link: (" +
-                          clientToJoin.getNickname() + ") [Quit: leaving]";
-
-
-
+    for (size_t i = 0; i <  channelNamestoDelete.size(); i++)
+        this->channel.erase(channelNamestoDelete[i]);
 
     // socket, kqueue 관련 연결 끊음
     struct kevent temp_event;

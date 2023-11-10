@@ -38,6 +38,7 @@ class Channel
     void deleteMemberFromInvitedList(std::string nickname);
     bool isMember(const std::string& nickname);
 
+    bool isNoOperator();
 
     const std::string &getName() const;
     std::string &getTopic();

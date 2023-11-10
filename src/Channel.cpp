@@ -96,3 +96,16 @@ bool Channel::isMember(const std::string& nickname)
     else
         return false;
 }
+
+bool Channel::isNoOperator()
+{
+    std::map<std::string, int>::iterator iter = members.begin();
+
+    while (iter != members.end())
+    {
+        if (iter->second == 1)
+            return false;
+        iter++;
+    }
+    return true;
+}
