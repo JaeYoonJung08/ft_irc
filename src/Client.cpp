@@ -25,11 +25,6 @@ void Client::setNickname(std::string nickname)
     this->nickname = nickname;
 }
 
-void Client::setIpaddress(std::string ip_address)
-{
-    this->ipaddress = ip_address;
-}
-
 Client::~Client()
 {}
 
@@ -42,13 +37,6 @@ std::string &Client::getUsername()
 {
     return username;
 }
-
-std::string &Client::getIpaddress()
-{
-    return ipaddress;
-}
-
-
 
 #define RED "\e[0;31m"
 #define NC "\e[0m"

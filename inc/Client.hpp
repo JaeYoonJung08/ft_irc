@@ -18,7 +18,6 @@ class Client
     int socket;
     std::string nickname;
     std::string username;
-    std::string ipaddress;
     std::string inBuffer;
     std::string outBuffer;
     std::string ipaddress;
@@ -32,10 +31,8 @@ class Client
     ~Client();
     void setUsername(std::string username);
     void setNickname(std::string nickname);
-    void setIpaddress(std::string ip_address);
     std::string &getNickname();
     std::string &getUsername();
-    std::string &getIpaddress();
     int getSocket() const;
     const std::string &getIpaddress() const;
     void setIpaddress(const std::string &ipaddress);
