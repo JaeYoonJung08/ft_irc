@@ -78,7 +78,6 @@ void Channel::broadcasting(std::string fromNickname, Message &message)
         {
             Message messageToSend = message;
             messageToSend.setPrefix(fromNickname);
-
             clientToSend.sendMessage(messageToSend);
         }
         iter++;
