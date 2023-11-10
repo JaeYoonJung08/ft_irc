@@ -95,23 +95,13 @@ void Server::run()
             }
             else
             { // 기존 접속
-                // naki님이 말씀하신 서버에서 클라이언트로 우째 보내노 라는
-                // 질문을 여기서 해결할 것임 kevent 구조체 안에는 filter라는 게
-                // 있음 이 친구들을 통해 서버에서 소켓을 받는지, 클라이언트한테
-                // 보내줄 것인지를 결정
                 if (events[i].filter == EVFILT_READ)
                 {
-                    // 기존 handleExistingConnection
-                    // 여기 이 부분이 클라이언트가 서버로 패킷을 보낼 경우
-
-                    // 여기서 이제해야할 거 개행을 찾지 못한 경우와 개행을 찾은
-                    // 경우을 나누어야함. 함수 수정해주자
                     handleExistingConnection(events[i].ident, events[i]);
                 }
                 else if (events[i].filter == EVFILT_WRITE)
                 {
-                    // 새롭게 추가 된 거
-                    // 서버가 클라리언트로 패킷을 보낼 경우
+                    // 서버가 클라이언트로 패킷을 보낼 경우
                     handleExistingConnection_send_client(events[i].ident);
                 }
             }
@@ -200,9 +190,6 @@ void Server::terminateConnection(int fd)
             members.erase(members.find(nickname));
     }
 
-
-
-
     // socket, kqueue 관련 연결 끊음
     struct kevent temp_event;
     EV_SET(&temp_event, fd, EVFILT_READ, EV_DELETE, 0, 0, NULL);
@@ -249,22 +236,13 @@ void Server::execCommand(Message message)
     {
         command.quit(message);
     }
-    // else if (message.getCommand() == "EXIT")
-    // {
-    //     std::cout << "here exit\n";
-    //     command.exit(message);
-    // }
 }
 
 int Server::getKque() const { return kque; }
 
 Client &Server::getClientByNickname(const std::string &nickname)
 {
-    std::map<std::string, int>::iterator iter =
-        nicknameToSocketFd.find(nickname);
-
-    //    if (iter == nicknameToSocketFd.end()) // nick name 없으면
-    //        return;
+    std::map<std::string, int>::iterator iter = nicknameToSocketFd.find(nickname);
 
     return socketFdToClient[iter->second];
 }

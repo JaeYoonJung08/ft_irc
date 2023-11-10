@@ -51,7 +51,6 @@ class Channel
     void setMODE_I(bool mode);
     void setMODE_T(bool mode);
 
-    void printMember();
     void broadcasting(std::string fromNickname, Message &message);
 };
 
