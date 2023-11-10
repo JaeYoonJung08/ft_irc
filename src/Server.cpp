@@ -19,10 +19,17 @@ bool Server::password_checker(const std::string &str)
 
 Server::Server(int portNumber, std::string password)
 {
+    std::cout << "awd" << portNumber << std::endl;
     this->portNumber = portNumber;
     this->password = password;
 
     if (password_checker(this->password))
+    {
+        std::cerr << "input password invaild" << std::endl;
+        std::exit(1);
+    }
+
+    if (!(portNumber >= 0 && 65535 >= portNumber))
     {
         std::cerr << "input port invaild" << std::endl;
         std::exit(1);
@@ -195,7 +202,10 @@ void Server::terminateConnection(int fd)
         }
     }
     for (size_t i = 0; i <  channelNamestoDelete.size(); i++)
+    {
+        this->channel[channelNamestoDelete[i]].partAll();
         this->channel.erase(channelNamestoDelete[i]);
+    }
 
     // socket, kqueue 관련 연결 끊음
     struct kevent temp_event;
@@ -219,12 +229,7 @@ void Server::execCommand(Message message)
     else if (message.getCommand() == "USER")
         command.user(message);
     else if (message.getCommand() == "PRIVMSG")
-    {
-        if (!(message.getArg()[0] == "parrot"))
-            command.privmsg(message);
-        else
-            command.parrotmsg(message);
-    }
+        command.privmsg(message);
     else if (message.getCommand() == "PING")
         command.ping(message);
     else if (message.getCommand() == "JOIN")

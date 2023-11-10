@@ -109,3 +109,15 @@ bool Channel::isNoOperator()
     }
     return true;
 }
+
+void Channel::partAll()
+{
+    std::map<std::string, int>::iterator iter = members.begin();
+    while (iter != members.end())
+    {
+        Client &client = serverPtr->getClientByNickname(iter->first);
+        std::string str = client.makePrefix()  + " PART " + name;
+        client.sendMessage(str);
+        iter++;
+    }
+}

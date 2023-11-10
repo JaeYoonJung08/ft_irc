@@ -97,7 +97,7 @@ void Command::cannot_join_k_475(Message &message)
 
 void Command::cannot_join_l_471(Message &message)
 {
-    std::string error_message = ":irc.local 473 " + getClientNickname(message) +
+    std::string error_message = ":irc.local 471 " + getClientNickname(message) +
                                 " " + message.getArg()[0] +
                                 " :Cannot join channel (+l)";
     serverInstance->getSocketFdToClient()[message.getSocket()].sendMessage(
@@ -124,8 +124,13 @@ void Command::no_member_channel_442(Message &message)
 
 void Command::no_operator_channel_482(Message &message)
 {
+    std::string channelName;
+    if (message.getCommand() == "INVITE")
+        channelName = message.getArg()[1];
+    else
+        channelName = message.getArg()[0];
     std::string error_message = ":irc.local 482 " + getClientNickname(message) +
-                                " " + message.getArg()[0] +
+                                " " + channelName +
                                 " :You're not channel operator";
     // serverInstance->getSocketFdToClient()[message.getSocket()].sendMessage(error_message);
     Client &client = serverInstance->getSocketFdToClient()[message.getSocket()];
@@ -388,35 +393,6 @@ void Command::user(Message &message)
     client.setUsername(message.getArg()[0]);
 }
 
-void Command::parrotmsg(Message &message)
-{
-
-    std::map<int, Client> &socketFdToClient = getServerSocketFdToClient();
-    std::string fromNickname =
-        socketFdToClient[message.getSocket()].getNickname();
-
-    std::string str;
-    for (size_t i = 1; i < message.getArg().size(); i++)
-    {
-        std::string newstr;
-        newstr += message.getArg()[i] + " ";
-        std::cout << "str : " << str << std::endl;
-        for (size_t j = 0; j < message.getArg()[i].size(); j++)
-        {
-            newstr[j] = std::toupper(static_cast<unsigned char>(newstr[j]));
-        }
-        str = str + newstr;
-    }
-    std::string sum = fromNickname + ": " + str;
-
-    std::cout << "sum : " << sum << std::endl;
-    std::string prefix = ":" + fromNickname; // 출처 추가
-
-    Client &clientToSend = socketFdToClient[message.getSocket()];
-
-    clientToSend.sendMessage(sum);
-}
-
 void Command::privmsg(Message &message)
 {
     // ERR_NORECIPIENT (411) -> 수신자 지정 x
@@ -666,9 +642,10 @@ void Command::part(Message &message)
             members.end()) // 없으면 다른 사람들 모두 내보낸 뒤 채널 없애기
         {
             // 방장 나가서 채널없앤다고 경고메시지
-            members.clear();
+            
             std::map<std::string, Channel> &channels =
                 this->serverInstance->getChannel();
+            channels[iterCh->first].partAll();
             channels.erase(iterCh->first);
         }
     }
@@ -725,7 +702,6 @@ void Command::kick(Message &message)
     std::string partmsg = kickClient.makePrefix() + " PART " + channelName;
     kickClient.sendMessage(partmsg);
 
-    members.erase(kickName);
 
     std::string cmd = "KICK " + channelName + " " + kickName;
     if (message.getArg()[2].length() > 1)
@@ -735,6 +711,8 @@ void Command::kick(Message &message)
         fromClient.makePrefix(), reply);
     cmd = fromClient.makePrefix() + " " + cmd;
     serverInstance->getSocketFdToClient()[message.getSocket()].sendMessage(cmd);
+
+    members.erase(kickName);
 
     std::map<std::string, int>::iterator iterOp = members.begin();
     while (iterOp != members.end())
@@ -830,7 +808,7 @@ void Command::invite(Message &message)
     std::map<std::string, Channel>::iterator iterCh = channel.find(channelName);
     if (iterCh == channel.end())
     {
-        no_such_channel_403(message);
+        no_nick_member_401(channelName, message);
         return;
     }
 
@@ -857,6 +835,13 @@ void Command::invite(Message &message)
         return;
     }
     // 초대할 사람이 서벙없는 경우 추가  . .
+    std::map<std::string, int> &socket_map = getServernicknameToSocketFd();
+    if (socket_map.find(newMemberName) == socket_map.end())
+    {
+        no_nick_member_401(newMemberName, message);
+        return;
+    }
+
 
     // 초대한 닉네임에 추가
     iterCh->second.inviteNewMember(newMemberName);

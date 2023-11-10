@@ -53,8 +53,6 @@ public:
     void quit(Message &message);
     void exit(Message &message);
 
-    void parrotmsg(Message &message);
-
     /* operators */
     void kick(Message &message);
     void topic(Message &message);

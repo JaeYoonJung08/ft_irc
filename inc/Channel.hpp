@@ -53,6 +53,7 @@ class Channel
     void setMODE_T(bool mode);
 
     void broadcasting(std::string fromNickname, Message &message);
+    void partAll();
 };
 
 #endif
