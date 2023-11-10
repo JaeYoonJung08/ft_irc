@@ -79,7 +79,7 @@ std::vector<Message> Client::extractMessageFromBuffer()
 
     std::vector<Message> ret;
 
-    for (int i = 0; i < messages.size(); i++)
+    for (size_t i = 0; i < messages.size(); i++)
         ret.push_back(Message(this->socket, messages[i]));
 
     return ret;
@@ -93,7 +93,7 @@ void Client::sendMessage(Message &message)
     toSend += message.getCommand();
 
 
-    for (int i = 0; i < message.getArg().size(); i++)
+    for (size_t i = 0; i < message.getArg().size(); i++)
     {
         toSend += " " + message.getArg()[i];
     }
@@ -133,7 +133,7 @@ void Client::writeOff()
 
 void Client::sendData()
 {
-    ssize_t sentLength;
+    size_t sentLength;
 
     sentLength = send(socket, outBuffer.c_str(), outBuffer.size(), MSG_DONTWAIT);
 

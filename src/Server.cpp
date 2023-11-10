@@ -9,7 +9,7 @@ bool Server::password_checker(const std::string &str)
         return (true);
     }
     /* 공백 문자 또는 출력 가능하지 않은 문자 포함하는지 확인.*/
-    for (int i = 0; i < str.length(); i++)
+    for (size_t i = 0; i < str.length(); i++)
     {
         if ((std::isspace(str[i])) || !std::isprint(str[i]))
             return (true);
@@ -154,7 +154,7 @@ void Server::handleExistingConnection_send_client(int fd)
 
 void Server::handleExistingConnection(int sockFd, struct kevent event)
 {
-    if (isConnected(sockFd, event) == false)
+    if (isConnected(event) == false)
     {
         this->terminateConnection(sockFd);
         return;
@@ -165,7 +165,7 @@ void Server::handleExistingConnection(int sockFd, struct kevent event)
               << std::endl;
 
     std::vector<Message> messages = this->socketFdToClient[sockFd].readData();
-    for (int i = 0; i < messages.size(); i++)
+    for (size_t i = 0; i < messages.size(); i++)
     {
         try
         {
@@ -179,7 +179,7 @@ void Server::handleExistingConnection(int sockFd, struct kevent event)
     }
 }
 
-bool Server::isConnected(int fd, struct kevent event)
+bool Server::isConnected(struct kevent event)
 {
     if (event.flags & EV_EOF)
     {
@@ -187,19 +187,6 @@ bool Server::isConnected(int fd, struct kevent event)
     }
     return true;
 }
-
-
-// void Command::success_invite_341(Message &message, std::string newMemberName)
-// {
-//     std::string success_message =
-//         ":irc_local 341 " + getClientNickname(message) + " " +
-//         message.getArg()[0] + " " + message.getArg()[1];
-//     // std::string success_message =
-//     //     ":irc_local 341 " + message.getArg()[1]; + " " +
-//     //     message.getArg()[0];
-//     serverInstance->getSocketFdToClient()[message.getSocket()].sendMessage(success_message);
-//     //serverInstance->getClientByNickname(newMemberName).sendMessage(success_message);
-// }
 
 void Server::terminateConnection(int fd)
 {
@@ -209,19 +196,8 @@ void Server::terminateConnection(int fd)
     {
         Channel &mini_channel = iterCh->second;
         std::map<std::string, int> &members = mini_channel.getMembers();
-        std::map <std::string, int>::iterator iter = members.begin();
-        // for (; iter != members.end(); iter++)
-        // {
-        //     std::cout << "iter nick : " << iter->first << " " << "iter num : " << iter->second << std::endl; 
-        // }
         if (members.find(nickname) != members.end())
             members.erase(members.find(nickname));
-
-        std::map <std::string, int>::iterator iter2 = members.begin();
-        // for (; iter2 != members.end(); iter2++)
-        // {
-        //     std::cout << "iter2 nick : " << iter2->first << " " << "iter2 num : " << iter2->second << std::endl; 
-        // }
     }
 
 
