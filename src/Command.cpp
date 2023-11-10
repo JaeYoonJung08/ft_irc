@@ -271,9 +271,9 @@ void Command::join_RPL_NAMREPLY_353(Message &message, std::string channelName)
     while (iterMb != member.end())
     {
         if (iterMb->second == 1)
-            user_list += "@" + iterMb->first;
+            user_list += "@" + iterMb->first + " ";
         else
-            user_list += " " + iterMb->first;
+            user_list += iterMb->first + " ";
         iterMb++;
     }
 
