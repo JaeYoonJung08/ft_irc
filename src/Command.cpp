@@ -38,7 +38,7 @@ void Command::password_incorrect_464(Message &message)
 {
     Client &client = serverInstance->getSocketFdToClient()[message.getSocket()];
     std::string nickname = client.getNickname();
-    std::string error_message = ":irc_local 464 " + nickname +
+    std::string error_message = ":irc.local 464 " + nickname +
                                 " :Password Incorrect, Command disconnected";
     client.sendMessage(error_message);
 }
@@ -46,14 +46,14 @@ void Command::password_incorrect_464(Message &message)
 void Command::empty_argument_431(Message &message)
 {
     std::string error_message =
-        ":irc_local 431 " + getClientNickname(message) + " :No nickname given";
+        ":irc.local 431 " + getClientNickname(message) + " :No nickname given";
     Client &client = serverInstance->getSocketFdToClient()[message.getSocket()];
     client.sendMessage(error_message);
 }
 
 void Command::command_empty_argument_461(Message &message)
 {
-    std::string error_message = ":irc_local 461 " + getClientNickname(message) +
+    std::string error_message = ":irc.local 461 " + getClientNickname(message) +
                                 " " + message.getCommand() +
                                 ":Not enough parameters";
     Client &client = serverInstance->getSocketFdToClient()[message.getSocket()];
@@ -70,7 +70,7 @@ void Command::duplicate_check_433(Message &message)
 
 void Command::no_such_channel_403(Message &message)
 {
-    std::string error_message = ":irc_local 403 " + getClientNickname(message) +
+    std::string error_message = ":irc.local 403 " + getClientNickname(message) +
                                 " " + message.getArg()[0] + " :No such channel";
     serverInstance->getSocketFdToClient()[message.getSocket()].sendMessage(
         error_message);
@@ -78,7 +78,7 @@ void Command::no_such_channel_403(Message &message)
 
 void Command::cannot_join_i_473(Message &message)
 {
-    std::string error_message = ":irc_local 473 " + getClientNickname(message) +
+    std::string error_message = ":irc.local 473 " + getClientNickname(message) +
                                 " " + message.getArg()[0] +
                                 " :Cannot join channel (+i)";
     serverInstance->getSocketFdToClient()[message.getSocket()].sendMessage(
@@ -87,7 +87,7 @@ void Command::cannot_join_i_473(Message &message)
 
 void Command::cannot_join_k_475(Message &message)
 {
-    std::string error_message = ":irc_local 475 " + getClientNickname(message) +
+    std::string error_message = ":irc.local 475 " + getClientNickname(message) +
                                 " " + message.getArg()[0] +
                                 " :Cannot join channel (+k)";
     serverInstance->getSocketFdToClient()[message.getSocket()].sendMessage(
@@ -96,7 +96,7 @@ void Command::cannot_join_k_475(Message &message)
 
 void Command::cannot_join_l_471(Message &message)
 {
-    std::string error_message = ":irc_local 473 " + getClientNickname(message) +
+    std::string error_message = ":irc.local 473 " + getClientNickname(message) +
                                 " " + message.getArg()[0] +
                                 " :Cannot join channel (+l)";
     serverInstance->getSocketFdToClient()[message.getSocket()].sendMessage(
@@ -105,7 +105,7 @@ void Command::cannot_join_l_471(Message &message)
 
 void Command::bad_channel_mask_476(Message &message)
 {
-    std::string error_message = ":irc_local 476 " + getClientNickname(message) +
+    std::string error_message = ":irc.local 476 " + getClientNickname(message) +
                                 " " + message.getArg()[0] +
                                 " :Bad Channel Mask";
     serverInstance->getSocketFdToClient()[message.getSocket()].sendMessage(
@@ -114,7 +114,7 @@ void Command::bad_channel_mask_476(Message &message)
 
 void Command::no_member_channel_442(Message &message)
 {
-    std::string error_message = ":irc_local 442 " + getClientNickname(message) +
+    std::string error_message = ":irc.local 442 " + getClientNickname(message) +
                                 " " + message.getArg()[0] +
                                 " :You're not on that channel";
     serverInstance->getSocketFdToClient()[message.getSocket()].sendMessage(
@@ -123,7 +123,7 @@ void Command::no_member_channel_442(Message &message)
 
 void Command::no_operator_channel_482(Message &message)
 {
-    std::string error_message = ":irc_local 482 " + getClientNickname(message) +
+    std::string error_message = ":irc.local 482 " + getClientNickname(message) +
                                 " " + message.getArg()[0] +
                                 " :You're not channel operator";
     // serverInstance->getSocketFdToClient()[message.getSocket()].sendMessage(error_message);
@@ -141,7 +141,7 @@ void Command::no_users_channel_441(Message &message)
 
 void Command::user_already_channel_443(Message &message)
 {
-    std::string error_message = ":irc_local 443 " + getClientNickname(message) +
+    std::string error_message = ":irc.local 443 " + getClientNickname(message) +
                                 " " + message.getArg()[0] + ' ' +
                                 message.getArg()[1] + " :is already on channel";
     serverInstance->getSocketFdToClient()[message.getSocket()].sendMessage(
@@ -150,8 +150,8 @@ void Command::user_already_channel_443(Message &message)
 
 void Command::channel_mode_324(Message &message, Channel channel)
 {
-    std::string error_message =
-        " :irc_local 324 " + getClientNickname(message) + " " + channel.getName();
+    std::string error_message = ":irc.local 324 " + getClientNickname(message) +
+                                " " + channel.getName();
 
     if (channel.getMODE_I())
         error_message + " +i";
@@ -172,7 +172,7 @@ void Command::channel_mode_324(Message &message, Channel channel)
 
 void Command::characters_not_allowed_432(Message &message)
 {
-    std::string error_message = ":irc_local 432 " + getClientNickname(message) +
+    std::string error_message = ":irc.local 432 " + getClientNickname(message) +
                                 " " + message.getArg()[0] +
                                 " :Erroneous nickname";
     serverInstance->getSocketFdToClient()[message.getSocket()].sendMessage(
@@ -181,16 +181,16 @@ void Command::characters_not_allowed_432(Message &message)
 
 void Command::no_topic_channel_331(Message &message)
 {
-    std::string reply = ":irc_local 331 " + getClientNickname(message) +
-                                " " + message.getArg()[0] + " :No topic is set";
+    std::string reply = ":irc.local 331 " + getClientNickname(message) + " " +
+                        message.getArg()[0] + " :No topic is set";
     serverInstance->getSocketFdToClient()[message.getSocket()].sendMessage(
         reply);
 }
 
 void Command::yes_topic_channel_332(Message &message, std::string topic)
 {
-    std::string reply = ":irc_local 332 " + getClientNickname(message) +
-                                " " + message.getArg()[0] + " " + topic;
+    std::string reply = ":irc.local 332 " + getClientNickname(message) + " " +
+                        message.getArg()[0] + " " + topic;
     serverInstance->getSocketFdToClient()[message.getSocket()].sendMessage(
         reply);
 }
@@ -198,14 +198,14 @@ void Command::yes_topic_channel_332(Message &message, std::string topic)
 void Command::success_invite_341(Message &message)
 {
     std::string success_message =
-        ":irc_local 341 " + getClientNickname(message) + " " +
+        ":irc.local 341 " + getClientNickname(message) + " " +
         message.getArg()[0] + " " + message.getArg()[1];
     serverInstance->getSocketFdToClient()[message.getSocket()].sendMessage(success_message);
 }
 
 void Command::no_such_server_402(std::string channelName, Message &message)
 {
-    std::string error_message = ":irc_local 402 " + getClientNickname(message) +
+    std::string error_message = ":irc.local 402 " + getClientNickname(message) +
                                 " " + channelName + " :No such server";
     serverInstance->getSocketFdToClient()[message.getSocket()].sendMessage(error_message);
 }
@@ -213,14 +213,14 @@ void Command::no_such_server_402(std::string channelName, Message &message)
 void Command::no_nick_member_401(std::string no_nick, Message &message)
 {
     std::string error_message =
-        ":irc_local 401 " + no_nick + " :No such nick/channel";
+        ":irc.local 401 " + no_nick + " :No such nick/channel";
     serverInstance->getSocketFdToClient()[message.getSocket()].sendMessage(
         error_message);
 }
 
 void Command::no_reciver_411(Message &message)
 {
-    std::string error_message = ":irc_local 411 " + getClientNickname(message) +
+    std::string error_message = ":irc.local 411 " + getClientNickname(message) +
                                 " " + ":No recipient given " +
                                 message.getCommand();
     serverInstance->getSocketFdToClient()[message.getSocket()].sendMessage(
@@ -229,7 +229,7 @@ void Command::no_reciver_411(Message &message)
 
 void Command::no_exist_message_412(Message &message)
 {
-    std::string error_message = ":irc_local 412 " + getClientNickname(message) +
+    std::string error_message = ":irc.local 412 " + getClientNickname(message) +
                                 " " + ":No text to send";
     serverInstance->getSocketFdToClient()[message.getSocket()].sendMessage(
         error_message);
@@ -237,7 +237,7 @@ void Command::no_exist_message_412(Message &message)
 
 void Command::no_member_channel_404(std::string channel, Message &message)
 {
-    std::string error_message = ":irc_local 404 " + getClientNickname(message) +
+    std::string error_message = ":irc.local 404 " + getClientNickname(message) +
                                 " " + channel + " :Cannot send to channel";
     serverInstance->getSocketFdToClient()[message.getSocket()].sendMessage(
         error_message);
@@ -245,7 +245,7 @@ void Command::no_member_channel_404(std::string channel, Message &message)
 
 void Command::error_no_nickname(Message &message)
 {
-    std::string error_message = ":irc_local : you don't have a nickname";
+    std::string error_message = ":irc.local : you don't have a nickname";
     Client &client = serverInstance->getSocketFdToClient()[message.getSocket()];
     client.sendMessage(error_message);
 }
@@ -254,13 +254,13 @@ void Command::success_show_nickname(Message &message)
 {
     Client &client = serverInstance->getSocketFdToClient()[message.getSocket()];
     std::string success_message =
-        " :irc_local : your nickname " + client.getNickname();
+        " :irc.local : your nickname " + client.getNickname();
     client.sendMessage(success_message);
 }
 
 void Command::join_RPL_NAMREPLY_353(Message &message, std::string channelName)
 {
-    std::map<std::string , Channel> &channel = getServerChannel();
+    std::map<std::string, Channel> &channel = getServerChannel();
     Channel &mini_channel = channel[channelName];
 
     std::map<std::string, int> &member = mini_channel.getMembers();
@@ -273,18 +273,20 @@ void Command::join_RPL_NAMREPLY_353(Message &message, std::string channelName)
         if (iterMb->second == 1)
             user_list += "@" + iterMb->first;
         else
-            user_list += " " +iterMb->first;
+            user_list += " " + iterMb->first;
         iterMb++;
     }
 
     std::string error_message = ":irc.local 353 " + getClientNickname(message) +
-                                   " = " + message.getArg()[0] + " : " + user_list;
-    serverInstance->getSocketFdToClient()[message.getSocket()].sendMessage(error_message);
+                                " = " + message.getArg()[0] + " :" + user_list;
+    serverInstance->getSocketFdToClient()[message.getSocket()].sendMessage(
+        error_message);
 }
 
 void Command::join_RPL_ENDOFNAMES_366(Message &message, std::string channelName)
 {
-    std::string ret = ":irc.local 366 "+ getClientNickname(message) + " " + channelName + " :End of /NAMES list.";
+    std::string ret = ":irc.local 366 " + getClientNickname(message) + " " +
+                      channelName + " :End of /NAMES list.";
     serverInstance->getSocketFdToClient()[message.getSocket()].sendMessage(ret);
 }
 
@@ -322,8 +324,10 @@ void Command::nick(Message &message)
     if (newNickname.empty())
         return empty_argument_431(message);
     std::map<int, Client>::iterator iter = socketFdToClient.find(socket);
-    std::map<std::string, int> &nicknameToSocketFd = getServernicknameToSocketFd();
-    std::map<std::string, int>::iterator iterNicknameToSocket = nicknameToSocketFd.find(newNickname);
+    std::map<std::string, int> &nicknameToSocketFd =
+        getServernicknameToSocketFd();
+    std::map<std::string, int>::iterator iterNicknameToSocket =
+        nicknameToSocketFd.find(newNickname);
 
     if (iterNicknameToSocket == nicknameToSocketFd.end()) // nickname 중복아님
     {
@@ -334,7 +338,8 @@ void Command::nick(Message &message)
         while (nick[i++])
             if (nick[i] == '\r' || nick[i] == '\n' || nick[i] == ' ')
                 return characters_not_allowed_432(message);
-        if (iter->second.getNickname() != "") // 이미 닉네임이 설정된 유저의 경우 - 변경
+        if (iter->second.getNickname() !=
+            "") // 이미 닉네임이 설정된 유저의 경우 - 변경
         {
             nicknameToSocketFd.erase(iter->second.getNickname());
             iter->second.setNickname(newNickname);
@@ -392,8 +397,7 @@ void Command::parrotmsg(Message &message)
         std::cout << "str : " << str << std::endl;
         for (size_t j = 0; j < message.getArg()[i].size(); j++)
         {
-            newstr[j] = std::toupper(
-                static_cast<unsigned char>(newstr[j]));
+            newstr[j] = std::toupper(static_cast<unsigned char>(newstr[j]));
         }
         str = str + newstr;
     }
@@ -457,7 +461,8 @@ void Command::privmsg(Message &message)
     else // private message
     {
         // ERR_NOSUCHNICK (401) -> 닉네임을 못 찾을 경우
-        std::map<std::string, int>::iterator iter = nicknameToSocketFd.find(receiver);
+        std::map<std::string, int>::iterator iter =
+            nicknameToSocketFd.find(receiver);
         if (iter == nicknameToSocketFd.end())
         {
             no_nick_member_401(receiver, message);
@@ -466,7 +471,8 @@ void Command::privmsg(Message &message)
 
         int socketToSend = nicknameToSocketFd[receiver];
         Client &clientToSend = socketFdToClient[socketToSend];
-        Message messageToBeSent = Message(socketToSend, fromClient.makePrefix(), "PRIVMSG", textToBeSent);
+        Message messageToBeSent = Message(socketToSend, fromClient.makePrefix(),
+                                          "PRIVMSG", textToBeSent);
         clientToSend.sendMessage(messageToBeSent);
     }
 }
@@ -550,14 +556,15 @@ void Command::join(Message &message)
         yes_topic_channel_332(message, "");
         join_RPL_NAMREPLY_353(message, channelName);
 
-        //join 성공하고 난 후 366
+        // join 성공하고 난 후 366
         join_RPL_ENDOFNAMES_366(message, channelName);
     }
     else
     {
         Client &clientToJoin = socketFdToClient[message.getSocket()];
         // 초대되지 않았는데 invited-only 에 시도할 경우
-        if (iter->second.getMODE_I() && !iter->second.isInvited(clientToJoin.getNickname()))
+        if (iter->second.getMODE_I() &&
+            !iter->second.isInvited(clientToJoin.getNickname()))
         {
             cannot_join_i_473(message);
             return;
@@ -584,7 +591,7 @@ void Command::join(Message &message)
         iter->second.deleteMemberFromInvitedList(
             socketFdToClient[message.getSocket()].getNickname());
 
-        //join 성공했을 때
+        // join 성공했을 때
         Message reply = message;
         reply.setPrefix(fromClient.makePrefix());
         clientToJoin.sendMessage(reply);
@@ -592,14 +599,14 @@ void Command::join(Message &message)
 
         yes_topic_channel_332(message, iter->second.getTopic());
 
-        //join 성공하고 난 후 353 
-        join_RPL_NAMREPLY_353(message,channelName);
-        //join 성공하고 난 후 366
+        // join 성공하고 난 후 353
+        join_RPL_NAMREPLY_353(message, channelName);
+        // join 성공하고 난 후 366
         join_RPL_ENDOFNAMES_366(message, channelName);
     }
 }
 
-//PART <channel> [<reason>]
+// PART <channel> [<reason>]
 void Command::part(Message &message)
 {
     if (message.getArg().size() < 1 || message.getArg()[0].empty())
@@ -629,21 +636,26 @@ void Command::part(Message &message)
     }
     else
     {
-        members.erase(nickname);
         std::string cmd = "PART " + channelName;
-        if (message.getArg()[1].length() > 1)
+        if (message.getArg().size() > 1)
             cmd += " " + message.getArg()[1];
         Message reply(message.getSocket(), cmd);
-        serverInstance->getChannel()[channelName].broadcasting(fromClient.makePrefix(), reply);
+        serverInstance->getChannel()[channelName].broadcasting(
+            fromClient.makePrefix(), reply);
+        cmd = fromClient.makePrefix() + " " + cmd;
+        serverInstance->getSocketFdToClient()[message.getSocket()].sendMessage(
+            cmd);
+        members.erase(nickname);
         std::map<std::string, int>::iterator iterOp = members.begin();
         while (iterOp != members.end())
         {
             if (iterOp->second == 1)
-            // 전체 멤버 맵에서 다른 1 있는지 확인하기 -> 있으면 break
+                // 전체 멤버 맵에서 다른 1 있는지 확인하기 -> 있으면 break
                 break;
             iterOp++;
         }
-        if (iterOp == members.end()) // 없으면 다른 사람들 모두 내보낸 뒤 채널 없애기
+        if (iterOp ==
+            members.end()) // 없으면 다른 사람들 모두 내보낸 뒤 채널 없애기
         {
             // 방장 나가서 채널없앤다고 경고메시지
             members.clear();
@@ -704,17 +716,21 @@ void Command::kick(Message &message)
     if (message.getArg()[2].length() > 1)
         cmd += " " + message.getArg()[2];
     Message reply(message.getSocket(), cmd);
-    serverInstance->getChannel()[iterCh->first].broadcasting(fromClient.makePrefix(), reply);
+    serverInstance->getChannel()[iterCh->first].broadcasting(
+        fromClient.makePrefix(), reply);
+    cmd = fromClient.makePrefix() + " " + cmd;
+    serverInstance->getSocketFdToClient()[message.getSocket()].sendMessage(cmd);
     members.erase(kickName);
     std::map<std::string, int>::iterator iterOp = members.begin();
     while (iterOp != members.end())
     {
         if (iterOp->second == 1)
-        // 전체 멤버 맵에서 다른 1 있는지 확인하기 -> 있으면 break
+            // 전체 멤버 맵에서 다른 1 있는지 확인하기 -> 있으면 break
             break;
         iterOp++;
     }
-    if (iterOp == members.end()) // 없으면 다른 사람들 모두 내보낸 뒤 채널 없애기
+    if (iterOp ==
+        members.end()) // 없으면 다른 사람들 모두 내보낸 뒤 채널 없애기
     {
         // 방장 나가서 채널없앤다고 경고메시지
         members.clear();
@@ -773,8 +789,10 @@ void Command::topic(Message &message)
         std::string &topic = channel[channelName].getTopic();
         topic = message.getArg()[1];
         yes_topic_channel_332(message, message.getArg()[1]);
-        Message reply(message.getSocket(), "TOPIC " + channelName + " " + message.getArg()[1]);
-        serverInstance->getChannel()[iterCh->first].broadcasting(fromClient.makePrefix(), reply);
+        Message reply(message.getSocket(),
+                      "TOPIC " + channelName + " " + message.getArg()[1]);
+        serverInstance->getChannel()[iterCh->first].broadcasting(
+            fromClient.makePrefix(), reply);
     }
     return;
 }
@@ -782,7 +800,8 @@ void Command::topic(Message &message)
 // INVITE <nickname> <channel>
 void Command::invite(Message &message)
 {
-    if (message.getArg().size() < 2 || message.getArg()[0].empty() || message.getArg()[1].empty())
+    if (message.getArg().size() < 2 || message.getArg()[0].empty() ||
+        message.getArg()[1].empty())
     {
         command_empty_argument_461(message);
         return;
@@ -827,13 +846,15 @@ void Command::invite(Message &message)
     // 초대한 닉네임에 추가
     iterCh->second.inviteNewMember(newMemberName);
 
-    //newMember 에게도 전송
+    // newMember 에게도 전송
     {
-        int socketToSend = getServernicknameToSocketFd().find(newMemberName)->second;
+        int socketToSend =
+            getServernicknameToSocketFd().find(newMemberName)->second;
         std::vector<std::string> argsToSend;
         argsToSend.push_back(newMemberName);
         argsToSend.push_back(channelName);
-        Message messageToNewMember(socketToSend, fromClient.makePrefix(), "INVITE", argsToSend);
+        Message messageToNewMember(socketToSend, fromClient.makePrefix(),
+                                   "INVITE", argsToSend);
         socketFdToClient[socketToSend].sendMessage(messageToNewMember);
     }
 
@@ -970,7 +991,10 @@ void Command::mode(Message &message)
     if (message.getArg().size() > 2)
         cmd += " :" + message.getArg()[2];
     Message reply(message.getSocket(), cmd);
-    serverInstance->getChannel()[iterCh->first].broadcasting(fromClient.makePrefix(), reply);
+    serverInstance->getChannel()[iterCh->first].broadcasting(
+        fromClient.makePrefix(), reply);
+    cmd = fromClient.makePrefix() + " " + cmd;
+    serverInstance->getSocketFdToClient()[message.getSocket()].sendMessage(cmd);
     return;
 }
 

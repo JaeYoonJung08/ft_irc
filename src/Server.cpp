@@ -189,6 +189,13 @@ void Server::terminateConnection(int fd)
         if (members.find(nickname) != members.end())
             members.erase(members.find(nickname));
     }
+    // ERROR :Closing link: (naki) [Quit: leaving]
+    Client &clientToJoin = socketFdToClient[fd];
+    std::string message = "ERROR :Closing link: (" +
+                          clientToJoin.getNickname() + ") [Quit: leaving]";
+
+
+
 
     // socket, kqueue 관련 연결 끊음
     struct kevent temp_event;
