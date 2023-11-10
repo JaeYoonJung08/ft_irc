@@ -491,7 +491,6 @@ void Command::privmsg(Message &message)
             no_member_channel_404(iter->first, message);
             return;
         }
-
         iter->second.broadcasting(fromNickname, message);
     }
     else // private message
@@ -589,7 +588,7 @@ void Command::join(Message &message)
         Client &clientToJoin = socketFdToClient[message.getSocket()];
         Message &reply = message;
         std::string fromNickname = clientToJoin.getNickname() + "!" + clientToJoin.getUsername() + "@" + "127.0.0.1";
-        clientToJoin.sendMessage(reply);
+        //clientToJoin.sendMessage(reply);
         iter2->second.broadcasting(fromNickname, reply);
 
 
@@ -641,7 +640,7 @@ void Command::join(Message &message)
         //join 성공했을 때
         Message &reply = message;
         std::string fromNickname = clientToJoin.getNickname() + "!" + clientToJoin.getUsername() + "@" + "127.0.0.1";
-        clientToJoin.sendMessage(reply);
+        //clientToJoin.sendMessage(reply);
         iter->second.broadcasting(fromNickname, reply);
 
         //join_success(message, channelName);
@@ -760,6 +759,8 @@ void Command::kick(Message &message)
         cmd += " " + message.getArg()[2];
     Message reply(message.getSocket(), cmd);
     serverInstance->getChannel()[iterCh->first].broadcasting(nickname, reply);
+    // std::string msg = ":" + getClientNickname + "!"
+    // clientToSend.sendMessage(reply);
     members.erase(kickName);
     std::map<std::string, int>::iterator iterOp = members.begin();
     while (iterOp != members.end())

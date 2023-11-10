@@ -25,6 +25,11 @@ void Client::setNickname(std::string nickname)
     this->nickname = nickname;
 }
 
+void Client::setIpaddress(std::string ip_address)
+{
+    this->ipaddress = ip_address;
+}
+
 Client::~Client()
 {}
 
@@ -37,6 +42,13 @@ std::string &Client::getUsername()
 {
     return username;
 }
+
+std::string &Client::getIpaddress()
+{
+    return ipaddress;
+}
+
+
 
 #define RED "\e[0;31m"
 #define NC "\e[0m"
@@ -95,7 +107,6 @@ void Client::sendMessage(Message &message)
 
     for (int i = 0; i < message.getArg().size(); i++)
     {
-
         toSend += " " + message.getArg()[i];
     }
     toSend += "\r\n";

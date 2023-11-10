@@ -87,8 +87,7 @@ void Channel::broadcasting(std::string &fromNickname, Message &message)
         if (fromNickname != iter->first)
         {
             Message messageToSend = message;
-            messageToSend.setPrefix(":" + fromNickname);
-
+            messageToSend.setPrefix(":" + fromNickname + "!" + "username" + "@" + "serverip");
             clientToSend.sendMessage(messageToSend);
         }
         iter++;
