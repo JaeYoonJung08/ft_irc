@@ -279,13 +279,6 @@ void Command::success_show_nickname(std::string nickname, Message &message)
     client.sendMessage(success_message);
 }
 
-
-void Command::join_success(Message &message, std::string channelName)
-{
-    std::string  suc_message = ":" + getClientNickname(message) + "!" + getClientUsername(message) + "@127.0.0.1 JOIN :" + channelName;
-    serverInstance->getSocketFdToClient()[message.getSocket()].sendMessage(suc_message);
-}
-
 void Command::join_RPL_NAMREPLY_353(Message &message, std::string channelName)
 {
     std::map<std::string , Channel> &channel = getServerChannel();
@@ -471,7 +464,6 @@ void Command::privmsg(Message &message)
     std::map<std::string, int> &nicknameToSocketFd = getServernicknameToSocketFd();
     Client fromClient = socketFdToClient[message.getSocket()];
     std::string fromNickname = fromClient.getNickname();
-    std::string prefix = ":" + fromNickname; // 출처 추가
 
     if (receiver[0] == '#' || receiver[0] == '&') // channel로 통신
     {
@@ -493,7 +485,7 @@ void Command::privmsg(Message &message)
             return;
         }
 
-        iter->second.broadcasting(fromClient, message);
+        iter->second.broadcasting(fromClient.makePrefix(), message);
     }
     else // private message
     {
@@ -507,7 +499,7 @@ void Command::privmsg(Message &message)
 
         int socketToSend = nicknameToSocketFd[receiver];
         Client &clientToSend = socketFdToClient[socketToSend];
-        Message messageToBeSent = Message(socketToSend, prefix, "PRIVMSG", textToBeSent);
+        Message messageToBeSent = Message(socketToSend, fromClient.makePrefix(), "PRIVMSG", textToBeSent);
         clientToSend.sendMessage(messageToBeSent);
     }
 }
@@ -588,10 +580,11 @@ void Command::join(Message &message)
 
         std::map<std::string, Channel>::iterator iter2 = channel.find(channelName);
         Client &clientToJoin = socketFdToClient[message.getSocket()];
-        Message &reply = message;
+        Message reply = message;
+        reply.setPrefix(fromClient.makePrefix());
 
         clientToJoin.sendMessage(reply);
-        iter2->second.broadcasting(fromClient, reply);
+        iter2->second.broadcasting(fromClient.makePrefix(), reply);
 
 
         //join_success(message, channelName);
@@ -641,8 +634,9 @@ void Command::join(Message &message)
 
         //join 성공했을 때
         Message reply = message;
+        reply.setPrefix(fromClient.makePrefix());
         clientToJoin.sendMessage(reply);
-        iter->second.broadcasting(fromClient, reply);
+        iter->second.broadcasting(fromClient.makePrefix(), reply);
 
         //join_success(message, channelName);
         yes_topic_channel_332(message, iter->second.getTopic());
@@ -689,7 +683,7 @@ void Command::part(Message &message)
         if (message.getArg()[1].length() > 1)
             cmd += " " + message.getArg()[1];
         Message reply(message.getSocket(), cmd);
-        serverInstance->getChannel()[channelName].broadcasting(fromClient, reply);
+        serverInstance->getChannel()[channelName].broadcasting(fromClient.makePrefix(), reply);
         std::map<std::string, int>::iterator iterOp = members.begin();
         while (iterOp != members.end())
         {
@@ -761,7 +755,7 @@ void Command::kick(Message &message)
     if (message.getArg()[2].length() > 1)
         cmd += " " + message.getArg()[2];
     Message reply(message.getSocket(), cmd);
-    serverInstance->getChannel()[iterCh->first].broadcasting(fromClient, reply);
+    serverInstance->getChannel()[iterCh->first].broadcasting(fromClient.makePrefix(), reply);
     members.erase(kickName);
     std::map<std::string, int>::iterator iterOp = members.begin();
     while (iterOp != members.end())
@@ -831,7 +825,7 @@ void Command::topic(Message &message)
         topic = message.getArg()[1];
         yes_topic_channel_332(message, message.getArg()[1]);
         Message reply(message.getSocket(), "TOPIC " + channelName + " " + message.getArg()[1]);
-        serverInstance->getChannel()[iterCh->first].broadcasting(fromClient, reply);
+        serverInstance->getChannel()[iterCh->first].broadcasting(fromClient.makePrefix(), reply);
     }
     return;
 }
@@ -857,7 +851,8 @@ void Command::invite(Message &message)
         return;
     }
 
-    std::string &nickname = socketFdToClient[message.getSocket()].getNickname();
+    Client fromClient = socketFdToClient[message.getSocket()];
+    std::string &nickname = fromClient.getNickname();
     std::map<std::string, int> &members = iterCh->second.getMembers();
     std::map<std::string, int>::iterator iterNick = members.find(nickname);
     if (iterNick == members.end())
@@ -889,7 +884,7 @@ void Command::invite(Message &message)
         std::vector<std::string> argsToSend;
         argsToSend.push_back(newMemberName);
         argsToSend.push_back(channelName);
-        Message messageToNewMember(socketToSend, ":" + nickname, "INVITE", argsToSend);
+        Message messageToNewMember(socketToSend, fromClient.makePrefix(), "INVITE", argsToSend);
         socketFdToClient[socketToSend].sendMessage(messageToNewMember);
     }
     
@@ -1026,7 +1021,7 @@ void Command::mode(Message &message)
     if (message.getArg().size() > 2)
         cmd += " :" + message.getArg()[2];
     Message reply(message.getSocket(), cmd);
-    serverInstance->getChannel()[iterCh->first].broadcasting(fromClient, reply);
+    serverInstance->getChannel()[iterCh->first].broadcasting(fromClient.makePrefix(), reply);
     return;
 }
 

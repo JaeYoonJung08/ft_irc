@@ -172,3 +172,12 @@ void Client::setIpaddress(const std::string &ipaddress)
 {
     Client::ipaddress = ipaddress;
 }
+
+std::string Client::makePrefix()
+{
+    std::string ret = "";
+
+    ret = ":" + nickname + "!" + username + "@" + ipaddress;
+
+    return ret;
+}

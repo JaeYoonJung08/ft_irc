@@ -8,10 +8,8 @@
 #include <map>
 #include <set>
 #include <string>
-#include "Client.hpp"
 
 class Server;
-class Client;
 
 class Channel
 {
@@ -54,7 +52,7 @@ class Channel
     void setMODE_T(bool mode);
 
     void printMember();
-    void broadcasting(Client &fromClient, Message &message);
+    void broadcasting(std::string fromNickname, Message &message);
 };
 
 #endif

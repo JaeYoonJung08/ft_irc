@@ -46,6 +46,8 @@ class Client
     void writeOff();
 
     void sendData();
+
+    std::string makePrefix();
 };
 
 #endif
