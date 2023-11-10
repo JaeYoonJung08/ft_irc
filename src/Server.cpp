@@ -121,12 +121,13 @@ void Server::run()
 
 void Server::handleNewConnection(int sockFd)
 {
-    struct sockaddr client_addr;
+    struct sockaddr_in client_addr;
     struct kevent event;
     int client_addr_size = sizeof(client_addr);
 
     int newFd = accept(sockFd, (sockaddr *)&client_addr,
                        (socklen_t *)&client_addr_size);
+
     if (newFd == -1)
         throw std::runtime_error("accept error");
     fcntl(newFd, F_SETFL, O_NONBLOCK); // non-block 설정
@@ -137,6 +138,7 @@ void Server::handleNewConnection(int sockFd)
     kevent(this->kque, &event, 1, NULL, 0, NULL);
 
     Client client(newFd);
+    client.setIpaddress(inet_ntoa(client_addr.sin_addr));
     socketFdToClient.insert(std::make_pair(newFd, client));
 
     std::cout << newFd << " : new connect!" << std::endl;
