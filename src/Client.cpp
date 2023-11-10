@@ -33,6 +33,11 @@ std::string &Client::getNickname()
     return nickname;
 }
 
+std::string &Client::getUsername()
+{
+    return username;
+}
+
 #define RED "\e[0;31m"
 #define NC "\e[0m"
 #define YELLOW "\033[0;33m"

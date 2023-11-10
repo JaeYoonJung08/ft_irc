@@ -28,6 +28,12 @@ const std::string &Command::getClientNickname(Message &message)
         .getNickname();
 }
 
+const std::string &Command::getClientUsername(Message &message)
+{
+    return serverInstance->getSocketFdToClient()[message.getSocket()]
+        .getUsername();
+}
+
 void Command::password_incorrect_464(Message &message)
 {
     Client &client = serverInstance->getSocketFdToClient()[message.getSocket()];
@@ -273,6 +279,45 @@ void Command::success_show_nickname(std::string nickname, Message &message)
     std::string success_message =
         " :irc_local : your nickname " + client.getNickname();
     client.sendMessage(success_message);
+}
+
+
+void Command::join_success(Message &message, std::string channelName)
+{
+    std::string  suc_message = ":" + getClientNickname(message) + "!" + getClientUsername(message) + "@127.0.0.1 JOIN :" + channelName;
+    serverInstance->getSocketFdToClient()[message.getSocket()].sendMessage(suc_message);
+}
+
+void Command::join_RPL_NAMREPLY_353(Message &message, std::string channelName)
+{
+    std::map<std::string , Channel> &channel = getServerChannel();
+    Channel &mini_channel = channel[channelName];
+
+    std::map<std::string, int> &member = mini_channel.getMembers();
+
+    std::map<std::string, int>::iterator iterMb = member.begin();
+    std::string user_list;
+
+    while (iterMb != member.end())
+    {
+        if (iterMb->second == 1)
+            user_list += "@" + iterMb->first;
+        else
+            user_list += " " +iterMb->first;
+        iterMb++;
+    }
+
+    std::cout << "user_list " << user_list << std::endl;
+
+    std::string error_message = ":irc.local 353 " + getClientNickname(message) +
+                                   " = " + message.getArg()[0] + " : " + user_list;
+    serverInstance->getSocketFdToClient()[message.getSocket()].sendMessage(error_message);
+}
+
+void Command::join_RPL_ENDOFNAMES_366(Message &message, std::string channelName)
+{
+    std::string ret = ":irc.local 366 "+ getClientNickname(message) + " " + channelName + " :End of /NAMES list.";
+    serverInstance->getSocketFdToClient()[message.getSocket()].sendMessage(ret);
 }
 
 //----------------------------command------------------------------//
@@ -538,7 +583,19 @@ void Command::join(Message &message)
         // this->channel[channelName] = newChannel;
         channel.insert(make_pair(channelName, newChannel));
 
+        //int socketToSend = nicknameToSocketFd[receivers[i]];
+        Client &clientToSend = socketFdToClient[message.getSocket()];
+        // std::cout << "nick:" <<  clientToSend.getNickname() << std::endl;
+        // Message messageToBeSent = Message(":" + clientToSend.getNickname(),
+        //                                     ":irc.local", "PRIVMSG", "aaa");
 
+
+        join_success(message, channelName);
+        yes_topic_channel_332(message, "");
+        join_RPL_NAMREPLY_353(message, channelName);
+
+        //join 성공하고 난 후 366
+        join_RPL_ENDOFNAMES_366(message, channelName);
         // 출력해보기
         //  iter = channel.begin();
         //  for ( ; iter != channel.end(); iter++)
@@ -549,7 +606,7 @@ void Command::join(Message &message)
     }
     else
     {
-        Client clientToJoin = socketFdToClient[message.getSocket()];
+        Client &clientToJoin = socketFdToClient[message.getSocket()];
         // 초대되지 않았는데 invited-only 에 시도할 경우
         if (iter->second.getMODE_I() && !iter->second.isInvited(clientToJoin.getNickname()))
         {
@@ -578,10 +635,23 @@ void Command::join(Message &message)
         iter->second.deleteMemberFromInvitedList(
             socketFdToClient[message.getSocket()].getNickname());
 
-        Message reply = message;
+
+
+
+        //join 성공했을 때
+        Message &reply = message;
         message.setPrefix(":" + clientToJoin.getNickname());
         iter->second.broadcasting(clientToJoin.getNickname(), reply);
         clientToJoin.sendMessage(reply);
+        //join_success(message, channelName);
+        yes_topic_channel_332(message, iter->second.getTopic());
+
+        //join 성공하고 난 후 353
+        join_RPL_NAMREPLY_353(message,channelName);
+
+        //join 성공하고 난 후 366
+        join_RPL_ENDOFNAMES_366(message, channelName);
+
 
     }
 }
@@ -617,8 +687,8 @@ void Command::part(Message &message)
     {
         members.erase(nickname);
         std::string cmd = "PART " + channelName;
-        if (message.getArg().size() > 1)
-            cmd += " :" + message.getArg()[1];
+        if (message.getArg()[1].length() > 1)
+            cmd += " " + message.getArg()[1];
         Message reply(message.getSocket(), cmd);
         serverInstance->getChannel()[channelName].broadcasting(nickname, reply);
         std::map<std::string, int>::iterator iterOp = members.begin();
@@ -687,12 +757,28 @@ void Command::kick(Message &message)
         return;
     }
 
-    members.erase(kickName);
     std::string cmd = "KICK " + channelName + " " + kickName;
-    if (message.getArg().size() > 2)
-        cmd += " :" + message.getArg()[2];
+    if (message.getArg()[2].length() > 1)
+        cmd += " " + message.getArg()[2];
     Message reply(message.getSocket(), cmd);
     serverInstance->getChannel()[iterCh->first].broadcasting(nickname, reply);
+    members.erase(kickName);
+    std::map<std::string, int>::iterator iterOp = members.begin();
+    while (iterOp != members.end())
+    {
+        if (iterOp->second == 1)
+        // 전체 멤버 맵에서 다른 1 있는지 확인하기 -> 있으면 break
+            break;
+        iterOp++;
+    }
+    if (iterOp == members.end()) // 없으면 다른 사람들 모두 내보낸 뒤 채널 없애기
+    {
+        // 방장 나가서 채널없앤다고 경고메시지
+        members.clear();
+        std::map<std::string, Channel> &channels =
+            this->serverInstance->getChannel();
+        channels.erase(iterCh->first);
+    }
     return;
 }
 
@@ -740,7 +826,6 @@ void Command::topic(Message &message)
 
     if (!message.getArg()[1].empty())
     {
-        // std::string &topic = iterCh->second.getTopic();
         std::string &topic = channel[channelName].getTopic();
         topic = message.getArg()[1];
         yes_topic_channel_332(message, message.getArg()[1]);
