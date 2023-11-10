@@ -95,6 +95,7 @@ void Client::sendMessage(Message &message)
 
     for (int i = 0; i < message.getArg().size(); i++)
     {
+
         toSend += " " + message.getArg()[i];
     }
     toSend += "\r\n";
