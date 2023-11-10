@@ -37,6 +37,7 @@ public:
      std::string &getServerPassWord(void);
 
     const std::string &getClientNickname(Message &message);
+    const std::string &getClientUsername(Message &message);
 
     /* clients */
     void pass(Message &message);
@@ -47,6 +48,7 @@ public:
     void pong(Message &message);
     void join(Message &message);
     int joinChannelNameCheck(std::string name);
+    void join_success(Message &message, std::string channelName);
     void part(Message &message);
     void quit(Message &message);
     void exit(Message &message);
@@ -86,6 +88,8 @@ public:
     void cannot_join_i_473(Message &message);
     void cannot_join_k_475(Message &message);
     void cannot_join_l_471(Message &message);
+    void join_RPL_NAMREPLY_353(Message &message, std::string channelName);
+    void join_RPL_ENDOFNAMES_366(Message &message, std::string channelName);
 
     void error_no_nickname(Message &message);
     void success_show_nickname(std::string nickname, Message &message);
