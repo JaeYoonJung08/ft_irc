@@ -78,7 +78,7 @@ public:
     void characters_not_allowed_432(Message &message);
     void no_topic_channel_331(Message &message);
     void yes_topic_channel_332(Message &message, std::string topic);
-    void success_invite_341(Message &message, std::string newMemberName);
+    void success_invite_341(Message &message);
     void no_such_server_402(std::string channel_name, Message &message);
     void no_nick_member_401(std::string no_nick, Message &message);
     void no_reciver_411(Message &message);
@@ -92,7 +92,7 @@ public:
     void join_RPL_ENDOFNAMES_366(Message &message, std::string channelName);
 
     void error_no_nickname(Message &message);
-    void success_show_nickname(std::string nickname, Message &message);
+    void success_show_nickname(Message &message);
 };
 
 

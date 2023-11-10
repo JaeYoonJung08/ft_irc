@@ -53,17 +53,6 @@ std::map<std::string, int> &Channel::getMembers()
     return members;
 }
 
-void Channel::printMember()
-{
-    std::map<std::string, int>::iterator iter = this->members.begin();
-
-    std::cout << iter->first << std::endl;
-    // for (; iter != members.end(); iter++)
-    // {
-    //     std::cout << "channel -> member : " << iter->first << std::endl;
-    // }
-}
-
 bool &Channel::getMODE_I() { return this->MODE_I; }
 
 bool &Channel::getMODE_T() { return this->MODE_T; }

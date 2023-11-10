@@ -9,7 +9,7 @@ bool Server::password_checker(const std::string &str)
         return (true);
     }
     /* 공백 문자 또는 출력 가능하지 않은 문자 포함하는지 확인.*/
-    for (int i = 0; i < str.length(); i++)
+    for (size_t i = 0; i < str.length(); i++)
     {
         if ((std::isspace(str[i])) || !std::isprint(str[i]))
             return (true);
@@ -95,23 +95,13 @@ void Server::run()
             }
             else
             { // 기존 접속
-                // naki님이 말씀하신 서버에서 클라이언트로 우째 보내노 라는
-                // 질문을 여기서 해결할 것임 kevent 구조체 안에는 filter라는 게
-                // 있음 이 친구들을 통해 서버에서 소켓을 받는지, 클라이언트한테
-                // 보내줄 것인지를 결정
                 if (events[i].filter == EVFILT_READ)
                 {
-                    // 기존 handleExistingConnection
-                    // 여기 이 부분이 클라이언트가 서버로 패킷을 보낼 경우
-
-                    // 여기서 이제해야할 거 개행을 찾지 못한 경우와 개행을 찾은
-                    // 경우을 나누어야함. 함수 수정해주자
                     handleExistingConnection(events[i].ident, events[i]);
                 }
                 else if (events[i].filter == EVFILT_WRITE)
                 {
-                    // 새롭게 추가 된 거
-                    // 서버가 클라리언트로 패킷을 보낼 경우
+                    // 서버가 클라이언트로 패킷을 보낼 경우
                     handleExistingConnection_send_client(events[i].ident);
                 }
             }
@@ -154,7 +144,7 @@ void Server::handleExistingConnection_send_client(int fd)
 
 void Server::handleExistingConnection(int sockFd, struct kevent event)
 {
-    if (isConnected(sockFd, event) == false)
+    if (isConnected(event) == false)
     {
         this->terminateConnection(sockFd);
         return;
@@ -165,7 +155,7 @@ void Server::handleExistingConnection(int sockFd, struct kevent event)
               << std::endl;
 
     std::vector<Message> messages = this->socketFdToClient[sockFd].readData();
-    for (int i = 0; i < messages.size(); i++)
+    for (size_t i = 0; i < messages.size(); i++)
     {
         try
         {
@@ -179,7 +169,7 @@ void Server::handleExistingConnection(int sockFd, struct kevent event)
     }
 }
 
-bool Server::isConnected(int fd, struct kevent event)
+bool Server::isConnected(struct kevent event)
 {
     if (event.flags & EV_EOF)
     {
@@ -187,18 +177,6 @@ bool Server::isConnected(int fd, struct kevent event)
     }
     return true;
 }
-
-// void Command::success_invite_341(Message &message, std::string newMemberName)
-// {
-//     std::string success_message =
-//         ":irc.local 341 " + getClientNickname(message) + " " +
-//         message.getArg()[0] + " " + message.getArg()[1];
-//     // std::string success_message =
-//     //     ":irc.local 341 " + message.getArg()[1]; + " " +
-//     //     message.getArg()[0];
-//     serverInstance->getSocketFdToClient()[message.getSocket()].sendMessage(success_message);
-//     //serverInstance->getClientByNickname(newMemberName).sendMessage(success_message);
-// }
 
 void Server::terminateConnection(int fd)
 {
@@ -208,7 +186,6 @@ void Server::terminateConnection(int fd)
     {
         Channel &mini_channel = iterCh->second;
         std::map<std::string, int> &members = mini_channel.getMembers();
-        std::map<std::string, int>::iterator iter = members.begin();
         if (members.find(nickname) != members.end())
             members.erase(members.find(nickname));
     }
@@ -217,7 +194,8 @@ void Server::terminateConnection(int fd)
     std::string message = "ERROR :Closing link: (" +
                           clientToJoin.getNickname() + ") [Quit: leaving]";
 
-    clientToJoin.sendMessage(message);
+
+
 
     // socket, kqueue 관련 연결 끊음
     struct kevent temp_event;
@@ -265,22 +243,13 @@ void Server::execCommand(Message message)
     {
         command.quit(message);
     }
-    // else if (message.getCommand() == "EXIT")
-    // {
-    //     std::cout << "here exit\n";
-    //     command.exit(message);
-    // }
 }
 
 int Server::getKque() const { return kque; }
 
 Client &Server::getClientByNickname(const std::string &nickname)
 {
-    std::map<std::string, int>::iterator iter =
-        nicknameToSocketFd.find(nickname);
-
-    //    if (iter == nicknameToSocketFd.end()) // nick name 없으면
-    //        return;
+    std::map<std::string, int>::iterator iter = nicknameToSocketFd.find(nickname);
 
     return socketFdToClient[iter->second];
 }

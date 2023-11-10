@@ -48,7 +48,6 @@ std::vector<Message> Client::readData()
 
     char buffer[IN_BUFFER_SIZE];
 
-    //memset(buffer, 0, sizeof(buffer));
     bzero(buffer, IN_BUFFER_SIZE);
 
     int received = recv(this->socket, buffer, sizeof(buffer), 0);
@@ -79,7 +78,7 @@ std::vector<Message> Client::extractMessageFromBuffer()
 
     std::vector<Message> ret;
 
-    for (int i = 0; i < messages.size(); i++)
+    for (size_t i = 0; i < messages.size(); i++)
         ret.push_back(Message(this->socket, messages[i]));
 
     return ret;
@@ -93,7 +92,7 @@ void Client::sendMessage(Message &message)
     toSend += message.getCommand();
 
 
-    for (int i = 0; i < message.getArg().size(); i++)
+    for (size_t i = 0; i < message.getArg().size(); i++)
     {
         toSend += " " + message.getArg()[i];
     }
@@ -141,7 +140,7 @@ void Client::sendData()
     {
         throw std::runtime_error("send error");
     }
-    else if (sentLength != outBuffer.size()) // 다 못 보냈을 때
+    else if (sentLength != (ssize_t)outBuffer.size()) // 다 못 보냈을 때
     {
         this->outBuffer.erase(0, sentLength);
     }
