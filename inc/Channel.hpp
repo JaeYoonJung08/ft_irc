@@ -36,6 +36,8 @@ class Channel
     void inviteNewMember(std::string nickname);
     bool isInvited(std::string nickname);
     void deleteMemberFromInvitedList(std::string nickname);
+    bool isMember(const std::string& nickname);
+
 
     const std::string &getName() const;
     std::string &getTopic();

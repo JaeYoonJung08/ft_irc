@@ -56,7 +56,7 @@ void Command::command_empty_argument_461(Message &message)
 
 void Command::duplicate_check_433(Message &message)
 {
-    // std::string error_message = ":irc_local 433 " 
+    // std::string error_message = ":irc_local 433 "
     //                              + message.getArg()[0] +
     //                             " :Nickname is already in use";
         std::string error_message = ":irc_local 433 " + message.getArg()[0] + " " +
@@ -409,18 +409,12 @@ void Command::parrotmsg(Message &message)
 
 void Command::privmsg(Message &message)
 {
-    // 이 부분은 여러 사용자들에게 메세지를 보낼 때 인 듯
-    // 즉 첫 번째 자리에 여러 수신자들만 온 것 같음 이 부분이
-
-    // ERR_NORECIPIENT (411) -> 수진자 지정 x
+    // ERR_NORECIPIENT (411) -> 수신자 지정 x
     if (message.getArg()[0].empty())
     {
         no_reciver_411(message);
         return;
     }
-
-    std::vector<std::string> receivers =
-        split(message.getArg()[0], ','); // 수신자 여러명 쪼갬
 
     // ERR_NOTEXTTOSEND (412) -> 보낼 텍스트가 없음.
     if (message.getArg()[1].empty())
@@ -428,97 +422,52 @@ void Command::privmsg(Message &message)
         no_exist_message_412(message);
         return;
     }
-    std::vector<std::string> textToBeSent;
-    for (int i = 0; i < message.getArg().size(); i++)
-        textToBeSent.push_back(message.getArg()[i]);
 
-    //- ERR_CANNOTSENDTOCHAN (404) -> 채널에 못 보낼 경우
-    //- `PRIVMSG`/ 를 `NOTICE`에 전달할 수 없음 을 나타냅니다 `<channel>`. 이
-    // 메시지의 마지막 매개변수에 사용된 텍스트는 다를 수 있습니다. 이는
-    // 일반적으로 채널이 *[조정되고] 클라이언트가 채널에서 말할 수 있는 권한이
-    // 없거나 *[외부 메시지 없음] * 모드가 설정된 채널에 참여하지 않는 등의 채널
-    // 모드에 대한 응답으로 전송됩니다.
-
-    // 1. 클라이언트가 채널에서 말할 수 없는 권한일 때 이 부분 추가해서 보자
-    // MODE l 때 인 것 같은데 subject에 set이라고 있다.
-    // 2. 클라이언트가 채널에 속해있지 않을 때
+    std::string receiver = message.getArg()[0];
+    std::vector<std::string> textToBeSent = message.getArg();
 
     std::map<int, Client> &socketFdToClient = getServerSocketFdToClient();
-    std::map<std::string, int> &nicknameToSocketFd =
-        getServernicknameToSocketFd();
-    std::string fromNickname =
-        socketFdToClient[message.getSocket()].getNickname();
+    std::map<std::string, int> &nicknameToSocketFd = getServernicknameToSocketFd();
+    std::string fromNickname = socketFdToClient[message.getSocket()].getNickname();
     std::string prefix = ":" + fromNickname; // 출처 추가
 
-    // 통신 들어가기 전에 검사를 다 하고 가야됨.
-
-    if (receivers[0][0] == '#' || receivers[0][0] == '&') // channel로 통신
+    if (receiver[0] == '#' || receiver[0] == '&') // channel로 통신
     {
 
         std::map<std::string, Channel> &channel = getServerChannel();
         // ERR_NOSUCHSERVER (402) -> 채널이 없음
-        for (unsigned int i = 0; i < receivers.size(); i++)
+        std::map<std::string, Channel>::iterator iter = channel.find(receiver);
+
+        // 채널이 존재하지 않는 경우
+        if (iter == channel.end())
         {
-            std::map<std::string, Channel>::iterator iter =
-                channel.find(receivers[i].substr(0, receivers[i].size()));
-            if (iter == channel.end())
-            {
-                no_such_server_402(receivers[i].substr(0, receivers[i].size()),
-                                   message);
-                return;
-            }
-            // 2. 클라이언트가 채널에 속해있지 않을 때, ERR_CANNOTSENDTOCHAN
-            // (404)
-            Client &nickname = socketFdToClient[message.getSocket()];
-            std::cout << "nick:" <<  nickname.getNickname() << std::endl;
-            std::map<std::string, int> member = iter->second.getMembers();
-            if (member.find(nickname.getNickname()) == member.end())
-            {
-                no_member_channel_404(iter->first, message);
-                return;
-            }
+            no_nick_member_401(receiver, message);
+            return;
         }
+        //- ERR_CANNOTSENDTOCHAN (404) -> 채널에 없는 경우
+        if (!iter->second.isMember(fromNickname))
+        {
+            no_member_channel_404(iter->first, message);
+            return;
+        }
+
+        iter->second.broadcasting(fromNickname, message);
     }
-    // 수신자들 통신
-    else
+    else // private message
     {
         // ERR_NOSUCHNICK (401) -> 닉네임을 못 찾을 경우
-        for (unsigned int i = 0; i < receivers.size(); i++)
+        std::map<std::string, int>::iterator iter = nicknameToSocketFd.find(receiver);
+        if (iter == nicknameToSocketFd.end())
         {
-            std::map<std::string, int>::iterator iter =
-                nicknameToSocketFd.find(receivers[i]);
-            if (iter == nicknameToSocketFd.end())
-            {
-                no_nick_member_401(receivers[i], message);
-                return;
-            }
+            no_nick_member_401(receiver, message);
+            return;
         }
-    }
-    // 통신 시작
-    for (int i = 0; i < receivers.size(); i++)
-    {
-        // 채널로 통신
-        if (receivers[i][0] == '#' || receivers[i][0] == '&') // channel로 통신
-        {
-            serverInstance->getChannel()[receivers[i]].broadcasting(
-                fromNickname, message);
-        }
-        // 수신자들 통신
-        else
-        {
-            int socketToSend = nicknameToSocketFd[receivers[i]];
-            Client &clientToSend = socketFdToClient[socketToSend];
-            // std::cout << "nick:" <<  clientToSend.getNickname() << std::endl;
-            Message messageToBeSent = Message(nicknameToSocketFd[receivers[i]],
-                                              prefix, "PRIVMSG", textToBeSent);
 
-            clientToSend.sendMessage(messageToBeSent);
-        }
+        int socketToSend = nicknameToSocketFd[receiver];
+        Client &clientToSend = socketFdToClient[socketToSend];
+        Message messageToBeSent = Message(socketToSend, prefix, "PRIVMSG", textToBeSent);
+        clientToSend.sendMessage(messageToBeSent);
     }
-
-    // 추가적인 부분해야될 거
-    // 1. target 첫 번째 자리에 -> channel, 두 번째 자리에 -> 닉네임, 세 번째
-    // 자리 -> text
 }
 
 void Command::ping(Message &message)
@@ -588,8 +537,8 @@ void Command::join(Message &message)
             socketFdToClient[message.getSocket()].getNickname(), 1);
         // this->channel[channelName] = newChannel;
         channel.insert(make_pair(channelName, newChannel));
-       
-        
+
+
         // 출력해보기
         //  iter = channel.begin();
         //  for ( ; iter != channel.end(); iter++)
@@ -755,7 +704,7 @@ void Command::topic(Message &message)
         command_empty_argument_461(message);
         return;
     }
-    
+
     std::map<int, Client> &socketFdToClient = getServerSocketFdToClient();
     std::map<std::string, Channel> &channel = getServerChannel();
     std::string channelName = message.getArg()[0];
