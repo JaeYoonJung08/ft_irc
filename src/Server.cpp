@@ -19,19 +19,19 @@ bool Server::password_checker(const std::string &str)
 
 Server::Server(int portNumber, std::string password)
 {
-    std::cout << "awd" << portNumber << std::endl;
+
     this->portNumber = portNumber;
     this->password = password;
 
     if (password_checker(this->password))
     {
-        std::cerr << "input password invaild" << std::endl;
+        std::cout << "input password invaild" << std::endl;
         std::exit(1);
     }
 
     if (!(portNumber >= 0 && 65535 >= portNumber))
     {
-        std::cerr << "input port invaild" << std::endl;
+        std::cout << "input port invaild" << std::endl;
         std::exit(1);
     }
     this->kque = kqueue(); // kque 생성
@@ -91,27 +91,33 @@ void Server::run()
     {
         struct kevent events[32];
         int triggered = kevent(this->kque, NULL, 0, events, 32, NULL);
-        if (triggered == -1)
-            throw std::runtime_error("kevent event error");
-        for (int i = 0; i < triggered; i++)
-        {
-            if ((int)events[i].ident ==
-                this->serverSocket) // 소켓에서 이벤트 발생
+        try {
+            if (triggered == -1)
+                throw std::runtime_error("kevent event error");
+            for (int i = 0; i < triggered; i++)
             {
-                handleNewConnection(events[i].ident);
-            }
-            else
-            { // 기존 접속
-                if (events[i].filter == EVFILT_READ)
+                if ((int)events[i].ident ==
+                    this->serverSocket) // 소켓에서 이벤트 발생
                 {
-                    handleExistingConnection(events[i].ident, events[i]);
+                    handleNewConnection(events[i].ident);
                 }
-                else if (events[i].filter == EVFILT_WRITE)
-                {
-                    // 서버가 클라이언트로 패킷을 보낼 경우
-                    handleExistingConnection_send_client(events[i].ident);
+                else
+                { // 기존 접속
+                    if (events[i].filter == EVFILT_READ)
+                    {
+                        handleExistingConnection(events[i].ident, events[i]);
+                    }
+                    else if (events[i].filter == EVFILT_WRITE)
+                    {
+                        // 서버가 클라이언트로 패킷을 보낼 경우
+                        handleExistingConnection_send_client(events[i].ident);
+                    }
                 }
             }
+        }
+        catch (const std::exception &e)
+        {
+            std::cout << e.what() << std::endl;
         }
     }
 }
@@ -222,8 +228,12 @@ void Server::terminateConnection(int fd)
 void Server::execCommand(Message message)
 {
     Command &command = Command::getInstance(*this);
+    Client &client = socketFdToClient[message.getSocket()];
+    
     if (message.getCommand() == "PASS")
         command.pass(message);
+    else if (client.getIsAuthenticated() == false)
+        terminateConnection(message.getSocket());
     else if (message.getCommand() == "NICK")
         command.nick(message);
     else if (message.getCommand() == "USER")
@@ -257,4 +267,24 @@ Client &Server::getClientByNickname(const std::string &nickname)
     std::map<std::string, int>::iterator iter = nicknameToSocketFd.find(nickname);
 
     return socketFdToClient[iter->second];
+}
+
+std::map<std::string, int>& Server::getNicknameToSocketFd()
+{
+    return nicknameToSocketFd;
+}
+
+std::map<int, Client>& Server::getSocketFdToClient()
+{
+    return socketFdToClient;
+}
+
+std::map<std::string, Channel>& Server::getChannel()
+{
+    return channel;
+}
+
+std::string& Server::getPassWord()
+{
+    return password;
 }

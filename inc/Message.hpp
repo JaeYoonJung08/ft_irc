@@ -31,9 +31,7 @@ class Message
     const std::string &getCommand() const;
     std::vector<std::string> &getArg();
     void setPrefix(const std::string &prefix);
-
     int getSocket();
-
     void parse(std::string msg);
 };
 

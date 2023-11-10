@@ -25,16 +25,11 @@ private:
 
 public:
 
-    static Command& getInstance(Server& server)
-    {
-        commandInstance.serverInstance = &server;   
-        return commandInstance;
-    }
-
-     std::map<std::string,int> &getServernicknameToSocketFd(void); 
-     std::map<int, Client> &getServerSocketFdToClient(void);
-     std::map<std::string, Channel> &getServerChannel(void);
-     std::string &getServerPassWord(void);
+    static Command& getInstance(Server& server);
+    std::map<std::string,int> &getServernicknameToSocketFd(void); 
+    std::map<int, Client> &getServerSocketFdToClient(void);
+    std::map<std::string, Channel> &getServerChannel(void);
+    std::string &getServerPassWord(void);
 
     const std::string &getClientNickname(Message &message);
     const std::string &getClientUsername(Message &message);
@@ -88,7 +83,6 @@ public:
     void cannot_join_l_471(Message &message);
     void join_RPL_NAMREPLY_353(Message &message, std::string channelName);
     void join_RPL_ENDOFNAMES_366(Message &message, std::string channelName);
-
     void error_no_nickname(Message &message);
     void success_show_nickname(Message &message);
 };

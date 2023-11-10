@@ -2,6 +2,12 @@
 
 Command Command::commandInstance;
 
+Command& Command::getInstance(Server& server)
+{
+    commandInstance.serverInstance = &server;   
+    return commandInstance;
+}
+
 std::map<std::string, int> &Command::getServernicknameToSocketFd(void)
 {
     return serverInstance->getNicknameToSocketFd();
@@ -132,7 +138,6 @@ void Command::no_operator_channel_482(Message &message)
     std::string error_message = ":irc.local 482 " + getClientNickname(message) +
                                 " " + channelName +
                                 " :You're not channel operator";
-    // serverInstance->getSocketFdToClient()[message.getSocket()].sendMessage(error_message);
     Client &client = serverInstance->getSocketFdToClient()[message.getSocket()];
     client.sendMessage(error_message);
 }
@@ -151,7 +156,7 @@ void Command::no_users_channel_441(Message &message)
 void Command::user_already_channel_443(Message &message)
 {
     std::string error_message = ":irc.local 443 " + getClientNickname(message) +
-                                " " + message.getArg()[0] + ' ' +
+                                " " + message.getArg()[0] + " " +
                                 message.getArg()[1] + " :is already on channel";
     serverInstance->getSocketFdToClient()[message.getSocket()].sendMessage(
         error_message);
@@ -163,17 +168,17 @@ void Command::channel_mode_324(Message &message, Channel channel)
                                 " " + channel.getName();
 
     if (channel.getMODE_I())
-        error_message + "+i ";
+        error_message += " +i";
     if (channel.getMODE_T())
-        error_message + "+t ";
+        error_message += " +t";
     if (channel.getKey() != "")
-        error_message + "+k ";
+        error_message += " +k";
     if (channel.getLimit() != 0)
     {
         std::stringstream ss;
         ss << channel.getLimit();
         std::string tmp = ss.str();
-        error_message + "+l " + tmp;
+        error_message += " +l" + tmp;
     }
     serverInstance->getSocketFdToClient()[message.getSocket()].sendMessage(
         error_message);
@@ -305,7 +310,6 @@ void Command::join_RPL_ENDOFNAMES_366(Message &message, std::string channelName)
 
 void Command::pass(Message &message)
 {
-    // 비밀번호가 틀렸을 경우 ERR_PASSWDMISMATCH (464), 461을 464로 대체
     std::string password = getServerPassWord();
 
     int count = message.getArg().size();
@@ -316,6 +320,8 @@ void Command::pass(Message &message)
         serverInstance->terminateConnection(message.getSocket());
         throw std::runtime_error("pass error");
     }
+    Client &client = serverInstance->getSocketFdToClient()[message.getSocket()];
+    client.setIsAuthenticated(true);
 }
 
 void Command::nick(Message &message)
@@ -331,7 +337,6 @@ void Command::nick(Message &message)
         return success_show_nickname(message);
     std::string newNickname = message.getArg()[0];
 
-    // Nickname이 empty일 때 431
     if (newNickname.empty())
         return empty_argument_431(message);
     std::map<int, Client>::iterator iter = socketFdToClient.find(socket);
@@ -349,13 +354,11 @@ void Command::nick(Message &message)
         while (nick[i++])
             if (nick[i] == '\r' || nick[i] == '\n' || nick[i] == ' ')
                 return characters_not_allowed_432(message);
-        if (iter->second.getNickname() !=
-            "") // 이미 닉네임이 설정된 유저의 경우 - 변경
+        if (iter->second.getNickname() != "") // 이미 닉네임이 설정된 유저의 경우 - 변경
         {
             nicknameToSocketFd.erase(iter->second.getNickname());
             iter->second.setNickname(newNickname);
             nicknameToSocketFd[newNickname] = message.getSocket();
-            //: a!@ NICK :bb
             Message messageToSend(client.getSocket(),
                                   ":irc.local 001 " + client.getNickname() +
                                       " :change your nickname");
@@ -363,26 +366,21 @@ void Command::nick(Message &message)
         }
         else
         {
-            std::cout << "first newNick name : " << newNickname << std::endl;
             iter->second.setNickname(newNickname);
             nicknameToSocketFd[newNickname] = message.getSocket();
-            Message messageToSend(
-                client.getSocket(),
+            Message messageToSend(client.getSocket(),
                 ":irc.local 001 " + client.getNickname() +
                     " :Welcome to the Internet Relay Network");
             client.sendMessage(messageToSend);
         }
     }
     else
-        return duplicate_check_433(
-            message); // ERR_NICKNAMEINUSE (433) -> Nickname 중복 에러 전송
+        return duplicate_check_433(message); // Nickname 중복 에러 전송
 }
 
 void Command::user(Message &message)
 {
-    //    * ERR_NEEDMOREPARAMS (461)
-    // 매개변수 충분하지 않음
-    if (message.getArg()[0].empty())
+    if (message.getArg().size() < 4 || message.getArg()[0].empty())
     {
         command_empty_argument_461(message);
         return;
@@ -393,17 +391,18 @@ void Command::user(Message &message)
     client.setUsername(message.getArg()[0]);
 }
 
+//PRIVMSG <nickname> <text>
 void Command::privmsg(Message &message)
 {
     // ERR_NORECIPIENT (411) -> 수신자 지정 x
-    if (message.getArg()[0].empty())
+    if (message.getArg().size() < 1 || message.getArg()[0].empty())
     {
         no_reciver_411(message);
         return;
     }
 
     // ERR_NOTEXTTOSEND (412) -> 보낼 텍스트가 없음.
-    if (message.getArg()[1].empty())
+    if (message.getArg().size() < 2 || message.getArg()[1].empty())
     {
         no_exist_message_412(message);
         return;
@@ -420,7 +419,6 @@ void Command::privmsg(Message &message)
 
     if (receiver[0] == '#' || receiver[0] == '&') // channel로 통신
     {
-
         std::map<std::string, Channel> &channel = getServerChannel();
         // ERR_NOSUCHSERVER (402) -> 채널이 없음
         std::map<std::string, Channel>::iterator iter = channel.find(receiver);
@@ -965,10 +963,9 @@ void Command::mode(Message &message)
         size_t newLimit = atoi(message.getArg()[2].c_str());
         if (message.getArg()[1][0] == '+')
         {
-            // 현재 채널 멤버보다 limit이 적으면 안되게 설정
             if (newLimit < members.size())
             {
-                // fail
+                // 현재 채널 멤버보다 limit이 적으면 안되게 설정
                 return;
             }
             oldLimit = newLimit;

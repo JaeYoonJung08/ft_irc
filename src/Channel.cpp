@@ -18,7 +18,6 @@ Channel::Channel(const std::string &name) : name(name)
 void Channel::setMembers(const std::string &nickname, const int operator_check)
 {
     this->members[nickname] = operator_check;
-    // members.insert(make_pair(nickname, operator_check));
 }
 
 void Channel::inviteNewMember(std::string nickname)

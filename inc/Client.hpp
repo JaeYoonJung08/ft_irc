@@ -21,7 +21,7 @@ class Client
     std::string inBuffer;
     std::string outBuffer;
     std::string ipaddress;
-
+    bool isAuthenticated;
 
   public:
     static void setServerPtr(Server *server_ptr);
@@ -31,9 +31,12 @@ class Client
     ~Client();
     void setUsername(std::string username);
     void setNickname(std::string nickname);
+    void setIsAuthenticated(bool auth);
+
     std::string &getNickname();
     std::string &getUsername();
     int getSocket() const;
+    bool &getIsAuthenticated();
     const std::string &getIpaddress() const;
     void setIpaddress(const std::string &ipaddress);
 

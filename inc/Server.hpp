@@ -21,8 +21,6 @@
 #include "../inc/Message.hpp"
 #include "../inc/Command.hpp"
 
-
-
 #define LISTEN_BACKLOG_NUM 5 // listen 에서 대기 큐 갯수.
 
 class Client;
@@ -47,24 +45,10 @@ class Server
 
     int getKque() const;
 
-    std::map<std::string, int>& getNicknameToSocketFd()
-    {
-        return nicknameToSocketFd;
-    }
-
-    std::map<int, Client>& getSocketFdToClient()
-    {
-        return socketFdToClient;
-    }
-
-    std::map<std::string, Channel>& getChannel()
-    {
-        return channel;
-    }
-    std::string& getPassWord()
-    {
-        return password;
-    }
+    std::map<std::string, int>& getNicknameToSocketFd();
+    std::map<int, Client>& getSocketFdToClient();
+    std::map<std::string, Channel>& getChannel();
+    std::string& getPassWord();
 
     void openSocket();
     void init();

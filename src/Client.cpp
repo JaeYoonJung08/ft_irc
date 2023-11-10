@@ -13,6 +13,7 @@ Client::Client(int socket)
     username = "";
     inBuffer = "";
     outBuffer = "";
+    isAuthenticated = false;
 }
 
 void Client::setUsername(std::string username)
@@ -179,4 +180,15 @@ std::string Client::makePrefix()
     ret = ":" + nickname + "!" + username + "@" + ipaddress;
 
     return ret;
+}
+
+
+void Client::setIsAuthenticated(bool auth)
+{
+    this->isAuthenticated = auth;
+}
+
+bool &Client::getIsAuthenticated()
+{
+    return isAuthenticated;
 }
