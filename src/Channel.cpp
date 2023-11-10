@@ -99,3 +99,11 @@ void Channel::setServerPtr(Server *server_ptr)
 {
     serverPtr = server_ptr;
 }
+
+bool Channel::isMember(const std::string& nickname)
+{
+    if (members.find(nickname) != members.end())
+        return true;
+    else
+        return false;
+}
