@@ -281,9 +281,6 @@ void Command::success_show_nickname(std::string nickname, Message &message)
     client.sendMessage(success_message);
 }
 
-        //:naki!jaeyojun@127.0.0.1 JOIN :#ch
-        // :irc.local 353 naki = #ch :@jaeyojun naki
-        // :irc.local 366 naki #ch :End of /NAMES list.
 
 void Command::join_success(Message &message, std::string channelName)
 {
@@ -660,7 +657,7 @@ void Command::join(Message &message)
     }
     else
     {
-        Client clientToJoin = socketFdToClient[message.getSocket()];
+        Client &clientToJoin = socketFdToClient[message.getSocket()];
         // 초대되지 않았는데 invited-only 에 시도할 경우
         if (iter->second.getMODE_I() && !iter->second.isInvited(clientToJoin.getNickname()))
         {
@@ -693,7 +690,7 @@ void Command::join(Message &message)
         
 
         //join 성공했을 때
-        Message reply = message;
+        Message &reply = message;
         message.setPrefix(":" + clientToJoin.getNickname());
         iter->second.broadcasting(clientToJoin.getNickname(), reply);
         clientToJoin.sendMessage(reply);
@@ -880,7 +877,6 @@ void Command::topic(Message &message)
 
     if (!message.getArg()[1].empty())
     {
-        // std::string &topic = iterCh->second.getTopic();
         std::string &topic = channel[channelName].getTopic();
         topic = message.getArg()[1];
         yes_topic_channel_332(message, message.getArg()[1]);
