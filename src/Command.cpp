@@ -628,6 +628,12 @@ void Command::join(Message &message)
         // 한번 들어갔으면 초대 리스트에서 제거
         iter->second.deleteMemberFromInvitedList(
             socketFdToClient[message.getSocket()].getNickname());
+
+        Message reply = message;
+        message.setPrefix(":" + clientToJoin.getNickname());
+        iter->second.broadcasting(clientToJoin.getNickname(), reply);
+        clientToJoin.sendMessage(reply);
+
     }
 }
 
