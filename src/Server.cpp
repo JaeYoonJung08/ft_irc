@@ -188,14 +188,13 @@ bool Server::isConnected(int fd, struct kevent event)
     return true;
 }
 
-
 // void Command::success_invite_341(Message &message, std::string newMemberName)
 // {
 //     std::string success_message =
-//         ":irc_local 341 " + getClientNickname(message) + " " +
+//         ":irc.local 341 " + getClientNickname(message) + " " +
 //         message.getArg()[0] + " " + message.getArg()[1];
 //     // std::string success_message =
-//     //     ":irc_local 341 " + message.getArg()[1]; + " " +
+//     //     ":irc.local 341 " + message.getArg()[1]; + " " +
 //     //     message.getArg()[0];
 //     serverInstance->getSocketFdToClient()[message.getSocket()].sendMessage(success_message);
 //     //serverInstance->getClientByNickname(newMemberName).sendMessage(success_message);
@@ -209,23 +208,16 @@ void Server::terminateConnection(int fd)
     {
         Channel &mini_channel = iterCh->second;
         std::map<std::string, int> &members = mini_channel.getMembers();
-        std::map <std::string, int>::iterator iter = members.begin();
-        // for (; iter != members.end(); iter++)
-        // {
-        //     std::cout << "iter nick : " << iter->first << " " << "iter num : " << iter->second << std::endl; 
-        // }
+        std::map<std::string, int>::iterator iter = members.begin();
         if (members.find(nickname) != members.end())
             members.erase(members.find(nickname));
-
-        std::map <std::string, int>::iterator iter2 = members.begin();
-        // for (; iter2 != members.end(); iter2++)
-        // {
-        //     std::cout << "iter2 nick : " << iter2->first << " " << "iter2 num : " << iter2->second << std::endl; 
-        // }
     }
+    // ERROR :Closing link: (naki) [Quit: leaving]
+    Client &clientToJoin = socketFdToClient[fd];
+    std::string message = "ERROR :Closing link: (" +
+                          clientToJoin.getNickname() + ") [Quit: leaving]";
 
-
-
+    clientToJoin.sendMessage(message);
 
     // socket, kqueue 관련 연결 끊음
     struct kevent temp_event;
