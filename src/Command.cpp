@@ -583,11 +583,11 @@ void Command::join(Message &message)
         // std::cout << "nick:" <<  clientToSend.getNickname() << std::endl;
         // Message messageToBeSent = Message(":" + clientToSend.getNickname(),
         //                                     ":irc.local", "PRIVMSG", "aaa");
-
-        std::map<std::string, Channel>::iterator iter2 = channel.find(channelName);
         Client &clientToJoin = socketFdToClient[message.getSocket()];
+        std::map<std::string, Channel>::iterator iter2 = channel.find(channelName);
         Message &reply = message;
         std::string fromNickname = clientToJoin.getNickname() + "!" + clientToJoin.getUsername() + "@" + "127.0.0.1";
+
         //clientToJoin.sendMessage(reply);
         iter2->second.broadcasting(fromNickname, reply);
 
