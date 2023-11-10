@@ -159,8 +159,6 @@ void Command::user_already_channel_443(Message &message)
         error_message);
 }
 
-
-
 void Command::channel_mode_324(Message &message,
                                       Channel channel)
 {
@@ -306,8 +304,6 @@ void Command::join_RPL_NAMREPLY_353(Message &message, std::string channelName)
             user_list += " " +iterMb->first;
         iterMb++;
     }
-
-    std::cout << "user_list " << user_list << std::endl;
 
     std::string error_message = ":irc.local 353 " + getClientNickname(message) +
                                    " = " + message.getArg()[0] + " : " + user_list;
@@ -589,8 +585,15 @@ void Command::join(Message &message)
         // Message messageToBeSent = Message(":" + clientToSend.getNickname(),
         //                                     ":irc.local", "PRIVMSG", "aaa");
 
+        std::map<std::string, Channel>::iterator iter2 = channel.find(channelName);
+        Client &clientToJoin = socketFdToClient[message.getSocket()];
+        Message &reply = message;
+        std::string fromNickname = clientToJoin.getNickname() + "!" + clientToJoin.getUsername() + "@" + "127.0.0.1";
+        clientToJoin.sendMessage(reply);
+        iter2->second.broadcasting(fromNickname, reply);
 
-        join_success(message, channelName);
+
+        //join_success(message, channelName);
         yes_topic_channel_332(message, "");
         join_RPL_NAMREPLY_353(message, channelName);
 
@@ -635,24 +638,19 @@ void Command::join(Message &message)
         iter->second.deleteMemberFromInvitedList(
             socketFdToClient[message.getSocket()].getNickname());
 
-
-
-
         //join 성공했을 때
         Message &reply = message;
-        message.setPrefix(":" + clientToJoin.getNickname());
-        iter->second.broadcasting(clientToJoin.getNickname(), reply);
+        std::string fromNickname = clientToJoin.getNickname() + "!" + clientToJoin.getUsername() + "@" + "127.0.0.1";
         clientToJoin.sendMessage(reply);
+        iter->second.broadcasting(fromNickname, reply);
+
         //join_success(message, channelName);
         yes_topic_channel_332(message, iter->second.getTopic());
 
-        //join 성공하고 난 후 353
+        //join 성공하고 난 후 353 
         join_RPL_NAMREPLY_353(message,channelName);
-
         //join 성공하고 난 후 366
         join_RPL_ENDOFNAMES_366(message, channelName);
-
-
     }
 }
 
