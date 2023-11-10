@@ -95,7 +95,6 @@ void Client::sendMessage(Message &message)
 
     for (int i = 0; i < message.getArg().size(); i++)
     {
-
         toSend += " " + message.getArg()[i];
     }
     toSend += "\r\n";
@@ -162,4 +161,14 @@ void Client::setServerPtr(Server *server_ptr)
 int Client::getSocket() const
 {
     return socket;
+}
+
+const std::string &Client::getIpaddress() const
+{
+    return ipaddress;
+}
+
+void Client::setIpaddress(const std::string &ipaddress)
+{
+    Client::ipaddress = ipaddress;
 }

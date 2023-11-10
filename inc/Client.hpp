@@ -20,6 +20,7 @@ class Client
     std::string username;
     std::string inBuffer;
     std::string outBuffer;
+    std::string ipaddress;
 
 
   public:
@@ -33,6 +34,8 @@ class Client
     std::string &getNickname();
     std::string &getUsername();
     int getSocket() const;
+    const std::string &getIpaddress() const;
+    void setIpaddress(const std::string &ipaddress);
 
     std::vector<Message> readData();
     std::vector<Message> extractMessageFromBuffer();

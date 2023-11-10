@@ -469,7 +469,8 @@ void Command::privmsg(Message &message)
 
     std::map<int, Client> &socketFdToClient = getServerSocketFdToClient();
     std::map<std::string, int> &nicknameToSocketFd = getServernicknameToSocketFd();
-    std::string fromNickname = socketFdToClient[message.getSocket()].getNickname();
+    Client fromClient = socketFdToClient[message.getSocket()];
+    std::string fromNickname = fromClient.getNickname();
     std::string prefix = ":" + fromNickname; // 출처 추가
 
     if (receiver[0] == '#' || receiver[0] == '&') // channel로 통신
@@ -492,7 +493,7 @@ void Command::privmsg(Message &message)
             return;
         }
 
-        iter->second.broadcasting(fromNickname, message);
+        iter->second.broadcasting(fromClient, message);
     }
     else // private message
     {
@@ -562,6 +563,7 @@ void Command::join(Message &message)
     std::map<std::string, Channel> &channel = getServerChannel();
     std::map<int, Client> &socketFdToClient = getServerSocketFdToClient();
 
+    Client fromClient = socketFdToClient[message.getSocket()];
     std::string channelName = message.getArg()[0];
     std::map<std::string, Channel>::iterator iter = channel.find(channelName);
 
@@ -580,7 +582,6 @@ void Command::join(Message &message)
         channel.insert(make_pair(channelName, newChannel));
 
         //int socketToSend = nicknameToSocketFd[receivers[i]];
-        Client &clientToSend = socketFdToClient[message.getSocket()];
         // std::cout << "nick:" <<  clientToSend.getNickname() << std::endl;
         // Message messageToBeSent = Message(":" + clientToSend.getNickname(),
         //                                     ":irc.local", "PRIVMSG", "aaa");
@@ -588,9 +589,9 @@ void Command::join(Message &message)
         std::map<std::string, Channel>::iterator iter2 = channel.find(channelName);
         Client &clientToJoin = socketFdToClient[message.getSocket()];
         Message &reply = message;
-        std::string fromNickname = clientToJoin.getNickname() + "!" + clientToJoin.getUsername() + "@" + "127.0.0.1";
+
         clientToJoin.sendMessage(reply);
-        iter2->second.broadcasting(fromNickname, reply);
+        iter2->second.broadcasting(fromClient, reply);
 
 
         //join_success(message, channelName);
@@ -639,10 +640,9 @@ void Command::join(Message &message)
             socketFdToClient[message.getSocket()].getNickname());
 
         //join 성공했을 때
-        Message &reply = message;
-        std::string fromNickname = clientToJoin.getNickname() + "!" + clientToJoin.getUsername() + "@" + "127.0.0.1";
+        Message reply = message;
         clientToJoin.sendMessage(reply);
-        iter->second.broadcasting(fromNickname, reply);
+        iter->second.broadcasting(fromClient, reply);
 
         //join_success(message, channelName);
         yes_topic_channel_332(message, iter->second.getTopic());
@@ -673,7 +673,8 @@ void Command::part(Message &message)
         return;
     }
 
-    std::string nickname = socketFdToClient[message.getSocket()].getNickname();
+    Client fromClient = socketFdToClient[message.getSocket()];
+    std::string nickname = fromClient.getNickname();
     std::map<std::string, int> &members = iterCh->second.getMembers();
     std::map<std::string, int>::iterator iterNick = members.find(nickname);
     if (iterNick == members.end()) // 채널은 있는데 그 채널 속 유저가 아님
@@ -688,7 +689,7 @@ void Command::part(Message &message)
         if (message.getArg()[1].length() > 1)
             cmd += " " + message.getArg()[1];
         Message reply(message.getSocket(), cmd);
-        serverInstance->getChannel()[channelName].broadcasting(nickname, reply);
+        serverInstance->getChannel()[channelName].broadcasting(fromClient, reply);
         std::map<std::string, int>::iterator iterOp = members.begin();
         while (iterOp != members.end())
         {
@@ -733,7 +734,8 @@ void Command::kick(Message &message)
         return;
     }
 
-    std::string nickname = socketFdToClient[message.getSocket()].getNickname();
+    Client fromClient = socketFdToClient[message.getSocket()];
+    std::string nickname = fromClient.getNickname();
     std::map<std::string, int> &members = iterCh->second.getMembers();
     std::map<std::string, int>::iterator iterNick = members.find(nickname);
     if (iterNick == members.end()) // 호출한 사람이 그 채널 속 유저가 아님
@@ -759,7 +761,7 @@ void Command::kick(Message &message)
     if (message.getArg()[2].length() > 1)
         cmd += " " + message.getArg()[2];
     Message reply(message.getSocket(), cmd);
-    serverInstance->getChannel()[iterCh->first].broadcasting(nickname, reply);
+    serverInstance->getChannel()[iterCh->first].broadcasting(fromClient, reply);
     members.erase(kickName);
     std::map<std::string, int>::iterator iterOp = members.begin();
     while (iterOp != members.end())
@@ -799,7 +801,8 @@ void Command::topic(Message &message)
         return;
     }
 
-    std::string nickname = socketFdToClient[message.getSocket()].getNickname();
+    Client fromClient = socketFdToClient[message.getSocket()];
+    std::string nickname = fromClient.getNickname();
     std::map<std::string, int> members = iterCh->second.getMembers();
     std::map<std::string, int>::iterator iterNick = members.find(nickname);
     if (iterNick == members.end())
@@ -828,7 +831,7 @@ void Command::topic(Message &message)
         topic = message.getArg()[1];
         yes_topic_channel_332(message, message.getArg()[1]);
         Message reply(message.getSocket(), "TOPIC " + channelName + " " + message.getArg()[1]);
-        serverInstance->getChannel()[iterCh->first].broadcasting(nickname, reply);
+        serverInstance->getChannel()[iterCh->first].broadcasting(fromClient, reply);
     }
     return;
 }
@@ -916,7 +919,8 @@ void Command::mode(Message &message)
         return;
     }
 
-    std::string nickname = socketFdToClient[message.getSocket()].getNickname();
+    Client fromClient = socketFdToClient[message.getSocket()];
+    std::string nickname = fromClient.getNickname();
     std::map<std::string, int> &members = iterCh->second.getMembers();
     std::map<std::string, int>::iterator iterNick = members.find(nickname);
     if (iterNick == members.end())
@@ -1022,7 +1026,7 @@ void Command::mode(Message &message)
     if (message.getArg().size() > 2)
         cmd += " :" + message.getArg()[2];
     Message reply(message.getSocket(), cmd);
-    serverInstance->getChannel()[iterCh->first].broadcasting(nickname, reply);
+    serverInstance->getChannel()[iterCh->first].broadcasting(fromClient, reply);
     return;
 }
 

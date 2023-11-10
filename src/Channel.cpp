@@ -77,17 +77,19 @@ void Channel::setMODE_T(bool mode)
     MODE_T = mode;
 }
 
-void Channel::broadcasting(std::string &fromNickname, Message &message)
+void Channel::broadcasting(Client &fromClient, Message &message)
 {
     std::map<std::string, int>::iterator iter = this->members.begin();
 
     while (iter != members.end())
     {
         Client &clientToSend = this->serverPtr->getClientByNickname(iter->first);
-        if (fromNickname != iter->first)
+        if (fromClient.getNickname() != iter->first)
         {
             Message messageToSend = message;
-            messageToSend.setPrefix(":" + fromNickname);
+            std::string prefix = ":" + fromClient.getNickname() + "!" + fromClient.getUsername()
+                    + "@" + fromClient.getIpaddress();
+            messageToSend.setPrefix(prefix);
 
             clientToSend.sendMessage(messageToSend);
         }
