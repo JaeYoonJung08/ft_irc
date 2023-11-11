@@ -19,7 +19,6 @@ bool Server::password_checker(const std::string &str)
 
 Server::Server(int portNumber, std::string password)
 {
-
     this->portNumber = portNumber;
     this->password = password;
 
@@ -255,9 +254,7 @@ void Server::execCommand(Message message)
     else if (message.getCommand() == "MODE")
         command.mode(message);
     else if (message.getCommand() == "QUIT")
-    {
         command.quit(message);
-    }
 }
 
 int Server::getKque() const { return kque; }

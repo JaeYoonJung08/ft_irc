@@ -6,13 +6,23 @@ int main(int argc, char* argv[])
 {
     if (argc != 3)
         return (std::cout << "Wrong arguments" << std::endl, 1);
-    
-	std::string argv_str = argv[1]; 
+    int i = 1;
+    int j;
+    while (i < argc)
+    {
+        j = 0;
+        while (argv[i][j])
+        {
+            if (isspace(argv[i][j]) != 0)
+                return (std::cout << "Wrong arguments" << std::endl, 1);
+            j++;
+        }
+        i++;
+    }
+	std::string argv_str = argv[1];
     if (argv_str.size() == 0 || argv_str.size() > 10)
         return (std::cout << "Wrong arguments" << std::endl, 1);
-
     Server server(atoi(argv[1]), argv[2]);
-
     try
     {
         server.openSocket();
