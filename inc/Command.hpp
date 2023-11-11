@@ -62,7 +62,7 @@ public:
     void password_incorrect_464(Message &message);
     void command_empty_argument_461(Message &message);
     void duplicate_check_433(Message &message);
-    void empty_argument_431(Message &message);
+    void error_no_nick_given_431(Message &message);
     void no_such_channel_403(Message &message);
     void no_member_channel_442(Message &message);
     void user_already_channel_443(Message &message);
@@ -83,10 +83,6 @@ public:
     void cannot_join_l_471(Message &message);
     void join_RPL_NAMREPLY_353(Message &message, std::string channelName);
     void join_RPL_ENDOFNAMES_366(Message &message, std::string channelName);
-    void error_no_nickname(Message &message);
-    void success_show_nickname(Message &message);
 };
 
-
 #endif
-

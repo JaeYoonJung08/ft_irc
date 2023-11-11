@@ -56,7 +56,7 @@ void Message::parse(std::string msg)
 
 	msg_split = split(msg, ' ');
 	size_t i = 0;
-    if (msg[0] == ':')
+    if (msg.at(0) == ':')
 	{
 		this->prefix = msg_split[i++];
 		this->command = msg_split[i++];

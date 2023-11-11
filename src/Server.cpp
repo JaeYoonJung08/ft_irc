@@ -90,7 +90,8 @@ void Server::run()
     {
         struct kevent events[32];
         int triggered = kevent(this->kque, NULL, 0, events, 32, NULL);
-        try {
+        try
+        {
             if (triggered == -1)
                 throw std::runtime_error("kevent event error");
             for (int i = 0; i < triggered; i++)
@@ -206,7 +207,7 @@ void Server::terminateConnection(int fd)
                 channelNamestoDelete.push_back(iterCh->first);
         }
     }
-    for (size_t i = 0; i <  channelNamestoDelete.size(); i++)
+    for (size_t i = 0; i < channelNamestoDelete.size(); i++)
     {
         this->channel[channelNamestoDelete[i]].partAll();
         this->channel.erase(channelNamestoDelete[i]);
@@ -228,15 +229,25 @@ void Server::execCommand(Message message)
 {
     Command &command = Command::getInstance(*this);
     Client &client = socketFdToClient[message.getSocket()];
-    
+
     if (message.getCommand() == "PASS")
         command.pass(message);
     else if (client.getIsAuthenticated() == false)
         terminateConnection(message.getSocket());
     else if (message.getCommand() == "NICK")
         command.nick(message);
+    else if (client.getNickname() == "")
+    {
+        std::cout<<"No Nick!"<<std::endl;
+        return ;
+    }
     else if (message.getCommand() == "USER")
         command.user(message);
+    else if (client.getUsername() == "" || client.getIpaddress() == "")
+    {
+        std::cout<<"No User!"<<std::endl;
+        return ;
+    }
     else if (message.getCommand() == "PRIVMSG")
         command.privmsg(message);
     else if (message.getCommand() == "PING")
@@ -261,27 +272,22 @@ int Server::getKque() const { return kque; }
 
 Client &Server::getClientByNickname(const std::string &nickname)
 {
-    std::map<std::string, int>::iterator iter = nicknameToSocketFd.find(nickname);
+    std::map<std::string, int>::iterator iter =
+        nicknameToSocketFd.find(nickname);
 
     return socketFdToClient[iter->second];
 }
 
-std::map<std::string, int>& Server::getNicknameToSocketFd()
+std::map<std::string, int> &Server::getNicknameToSocketFd()
 {
     return nicknameToSocketFd;
 }
 
-std::map<int, Client>& Server::getSocketFdToClient()
+std::map<int, Client> &Server::getSocketFdToClient()
 {
     return socketFdToClient;
 }
 
-std::map<std::string, Channel>& Server::getChannel()
-{
-    return channel;
-}
+std::map<std::string, Channel> &Server::getChannel() { return channel; }
 
-std::string& Server::getPassWord()
-{
-    return password;
-}
+std::string &Server::getPassWord() { return password; }
